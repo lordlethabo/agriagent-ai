@@ -1,6 +1,11 @@
+import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+from dotenv import load_dotenv
+from openai import AzureOpenAI
+
+load_dotenv()
 
 app = FastAPI(
     title="AgriAgent AI",
@@ -8,7 +13,6 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -17,12 +21,45 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
 class FarmInput(BaseModel):
     location: str
     farming_goal: str
     farm_size: str
     challenge: str
+
+
+client = AzureOpenAI(
+    azure_endpoint=os.getenv("AZURE_OPENAI_ENDPOINT"),
+    api_key=os.getenv("AZURE_OPENAI_API_KEY"),
+    api_version=os.getenv("AZURE_OPENAI_API_VERSION", "2024-02-15-preview")
+)
+
+
+def build_prompt(data: FarmInput):
+    return f"""
+You are AgriAgent AI, an expert farming reasoning assistant for rural and beginner farmers.
+
+The user does not know how to write AI prompts. They only gave four simple inputs.
+
+Farmer profile:
+Location: {data.location}
+Farming goal: {data.farming_goal}
+Farm size: {data.farm_size}
+Main challenge: {data.challenge}
+
+Create a practical farming plan.
+
+Return the answer with these sections:
+1. Farmer profile summary
+2. Best recommendation
+3. Reasoning
+4. Risks
+5. Resources needed
+6. Step-by-step action plan
+7. Cost-saving tips
+
+Use simple language. Be practical. Avoid complicated theory.
+"""
 
 
 @app.get("/")
@@ -36,108 +73,38 @@ def home():
 
 @app.post("/analyze")
 def analyze_farm(data: FarmInput):
+    deployment_name = os.getenv("AZURE_OPENAI_DEPLOYMENT")
 
-    location = data.location.strip()
-    farming_goal = data.farming_goal.strip()
-    farm_size = data.farm_size.strip()
-    challenge = data.challenge.strip()
+    if not deployment_name:
+        return {
+            "error": "AZURE_OPENAI_DEPLOYMENT is missing in .env"
+        }
 
-    recommendations = []
-    risks = []
-    resources_needed = []
+    prompt = build_prompt(data)
 
-    challenge_lower = challenge.lower()
-    goal_lower = farming_goal.lower()
-    location_lower = location.lower()
-
-    # Water challenges
-    if "water" in challenge_lower or "drought" in challenge_lower:
-        recommendations.append(
-            "Use drip irrigation, mulching, and rainwater harvesting."
-        )
-        recommendations.append(
-            "Water early morning or late afternoon to reduce evaporation."
-        )
-        risks.append(
-            "Insufficient water may reduce crop yields."
-        )
-
-    # Tomatoes
-    if "tomato" in goal_lower:
-        recommendations.append(
-            "Use heat-tolerant tomato varieties."
-        )
-        recommendations.append(
-            "Prepare raised beds with compost-rich soil."
-        )
-
-        resources_needed.extend([
-            "Tomato seedlings",
-            "Compost",
-            "Mulch",
-            "Drip irrigation kit",
-            "Pest control supplies"
-        ])
-
-    # Maize
-    elif "maize" in goal_lower or "corn" in goal_lower:
-        recommendations.append(
-            "Use drought-resistant maize seed."
-        )
-        recommendations.append(
-            "Plant after reliable rainfall."
-        )
-
-        resources_needed.extend([
-            "Maize seed",
-            "Fertilizer",
-            "Basic irrigation system"
-        ])
-
-    # General vegetables
-    elif "vegetable" in goal_lower:
-        recommendations.append(
-            "Start with spinach, onions, cabbage, and tomatoes."
-        )
-
-        resources_needed.extend([
-            "Vegetable seeds",
-            "Compost",
-            "Water storage tank"
-        ])
-
-    # Limpopo specific
-    if "limpopo" in location_lower:
-        recommendations.append(
-            "Focus on heat-tolerant crops and water conservation."
-        )
-
-    # Farm size guidance
-    if "1 hectare" in farm_size.lower():
-        recommendations.append(
-            "Divide land into production, nursery, compost, and water-storage zones."
-        )
-
-    action_plan = [
-        "Conduct a soil assessment.",
-        "Prepare land and irrigation.",
-        "Purchase inputs.",
-        "Plant crops.",
-        "Monitor weekly.",
-        "Record costs and yields.",
-        "Identify buyers before harvest."
-    ]
+    response = client.chat.completions.create(
+        model=deployment_name,
+        messages=[
+            {
+                "role": "system",
+                "content": "You are a helpful agricultural AI agent for rural and beginner farmers."
+            },
+            {
+                "role": "user",
+                "content": prompt
+            }
+        ],
+        temperature=0.4,
+        max_tokens=1000
+    )
 
     return {
         "farmer_profile": {
-            "location": location,
-            "farming_goal": farming_goal,
-            "farm_size": farm_size,
-            "challenge": challenge
+            "location": data.location,
+            "farming_goal": data.farming_goal,
+            "farm_size": data.farm_size,
+            "challenge": data.challenge
         },
-        "recommendations": recommendations,
-        "risks": risks,
-        "resources_needed": resources_needed,
-        "action_plan": action_plan,
-        "status": "Farm analysis completed successfully"
+        "ai_farming_plan": response.choices[0].message.content,
+        "status": "AI farm analysis completed successfully"
     }
