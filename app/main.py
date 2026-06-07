@@ -2,13 +2,13 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
-
 app = FastAPI(
     title="AgriAgent AI",
     description="AI-powered farming guidance API for rural and aspiring farmers",
     version="1.0.0"
 )
 
+# CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -36,54 +36,108 @@ def home():
 
 @app.post("/analyze")
 def analyze_farm(data: FarmInput):
+
     location = data.location.strip()
     farming_goal = data.farming_goal.strip()
     farm_size = data.farm_size.strip()
     challenge = data.challenge.strip()
 
     recommendations = []
+    risks = []
+    resources_needed = []
 
     challenge_lower = challenge.lower()
     goal_lower = farming_goal.lower()
     location_lower = location.lower()
 
+    # Water challenges
     if "water" in challenge_lower or "drought" in challenge_lower:
-        recommendations.append("Use drip irrigation, mulching, and water storage tanks to reduce water loss.")
-        recommendations.append("Plant during cooler periods and avoid watering during midday heat.")
+        recommendations.append(
+            "Use drip irrigation, mulching, and rainwater harvesting."
+        )
+        recommendations.append(
+            "Water early morning or late afternoon to reduce evaporation."
+        )
+        risks.append(
+            "Insufficient water may reduce crop yields."
+        )
 
-    if "tomato" in goal_lower or "tomatoes" in goal_lower:
-        recommendations.append("Use tomato varieties that handle heat well and prepare raised beds with compost.")
-        recommendations.append("Stake tomatoes early and monitor for pests like aphids, whiteflies, and tomato leaf miner.")
+    # Tomatoes
+    if "tomato" in goal_lower:
+        recommendations.append(
+            "Use heat-tolerant tomato varieties."
+        )
+        recommendations.append(
+            "Prepare raised beds with compost-rich soil."
+        )
 
-    if "maize" in goal_lower or "corn" in goal_lower:
-        recommendations.append("Choose drought-tolerant maize seed and plant after reliable rainfall starts.")
-        recommendations.append("Apply fertilizer in stages instead of all at once to reduce waste.")
+        resources_needed.extend([
+            "Tomato seedlings",
+            "Compost",
+            "Mulch",
+            "Drip irrigation kit",
+            "Pest control supplies"
+        ])
 
-    if "vegetable" in goal_lower or "vegetables" in goal_lower:
-        recommendations.append("Start with fast-growing vegetables like spinach, cabbage, onions, and tomatoes.")
-        recommendations.append("Use crop rotation to reduce diseases and improve soil health.")
+    # Maize
+    elif "maize" in goal_lower or "corn" in goal_lower:
+        recommendations.append(
+            "Use drought-resistant maize seed."
+        )
+        recommendations.append(
+            "Plant after reliable rainfall."
+        )
 
+        resources_needed.extend([
+            "Maize seed",
+            "Fertilizer",
+            "Basic irrigation system"
+        ])
+
+    # General vegetables
+    elif "vegetable" in goal_lower:
+        recommendations.append(
+            "Start with spinach, onions, cabbage, and tomatoes."
+        )
+
+        resources_needed.extend([
+            "Vegetable seeds",
+            "Compost",
+            "Water storage tank"
+        ])
+
+    # Limpopo specific
     if "limpopo" in location_lower:
-        recommendations.append("For Limpopo, prioritize heat-tolerant crops, water-saving systems, and soil moisture protection.")
+        recommendations.append(
+            "Focus on heat-tolerant crops and water conservation."
+        )
 
-    if "1 hectare" in farm_size.lower() or "one hectare" in farm_size.lower():
-        recommendations.append("Divide the 1 hectare into sections: production area, nursery area, compost area, and water storage area.")
+    # Farm size guidance
+    if "1 hectare" in farm_size.lower():
+        recommendations.append(
+            "Divide land into production, nursery, compost, and water-storage zones."
+        )
 
-    recommendations.append("Do soil testing before planting to understand pH, nutrients, and fertilizer needs.")
-    recommendations.append("Keep records of expenses, rainfall, planting dates, sales, and crop performance.")
-    recommendations.append("Start small, test what works, then scale after your first successful harvest.")
+    action_plan = [
+        "Conduct a soil assessment.",
+        "Prepare land and irrigation.",
+        "Purchase inputs.",
+        "Plant crops.",
+        "Monitor weekly.",
+        "Record costs and yields.",
+        "Identify buyers before harvest."
+    ]
 
     return {
-        "location": location,
-        "farming_goal": farming_goal,
-        "farm_size": farm_size,
-        "challenge": challenge,
+        "farmer_profile": {
+            "location": location,
+            "farming_goal": farming_goal,
+            "farm_size": farm_size,
+            "challenge": challenge
+        },
         "recommendations": recommendations,
-        "next_steps": [
-            "Create a simple planting calendar.",
-            "Estimate startup costs.",
-            "Find local buyers before harvesting.",
-            "Track every farming activity weekly."
-        ],
+        "risks": risks,
+        "resources_needed": resources_needed,
+        "action_plan": action_plan,
         "status": "Farm analysis completed successfully"
     }
