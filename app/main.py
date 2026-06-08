@@ -1,14 +1,15 @@
+import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+
 from app.models import FarmInput
-from app.agent import generate_farm_analysis
-import os
+from app.agent import generate_farm_analysis, run_all_agents
 
 
 app = FastAPI(
-    title="AgriAgent AI",
-    description="AI-powered farming guidance API for rural and aspiring farmers",
-    version="1.0.0"
+    title="AgriAgent Global",
+    description="Multi-agent climate and food security intelligence platform",
+    version="2.0.0"
 )
 
 
@@ -24,7 +25,7 @@ app.add_middleware(
 @app.get("/")
 def home():
     return {
-        "message": "Welcome to AgriAgent AI",
+        "message": "Welcome to AgriAgent Global",
         "docs": "/docs",
         "status": "API is running successfully"
     }
@@ -55,4 +56,22 @@ def analyze_farm(data: FarmInput):
         "ai_farming_plan": ai_plan,
         "model_used": os.getenv("AZURE_OPENAI_DEPLOYMENT"),
         "status": "AI farm analysis completed successfully"
+    }
+
+
+@app.post("/multi-agent-analysis")
+def multi_agent_analysis(data: FarmInput):
+    results = run_all_agents(data)
+
+    return {
+        "farmer_profile": {
+            "location": data.location,
+            "farming_goal": data.farming_goal,
+            "farm_size": data.farm_size,
+            "challenge": data.challenge
+        },
+        "agent_results": results["agent_results"],
+        "final_strategy": results["final_strategy"],
+        "model_used": os.getenv("AZURE_OPENAI_DEPLOYMENT"),
+        "status": "Multi-agent analysis completed successfully"
     }
