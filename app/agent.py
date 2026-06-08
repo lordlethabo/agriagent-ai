@@ -6,15 +6,15 @@ from app.prompts import SYSTEM_PROMPT
 
 
 def get_client():
-    endpoint = os.getenv("AZURE_OPENAI_ENDPOINT")
-    api_key = os.getenv("AZURE_OPENAI_API_KEY")
-    api_version = os.getenv("AZURE_OPENAI_API_VERSION", "2024-12-01-preview")
+    endpoint = os.getenv("AZURE_OPENAI_ENDPOINT", "").strip()
+    api_key = os.getenv("AZURE_OPENAI_API_KEY", "").strip()
+    api_version = os.getenv("AZURE_OPENAI_API_VERSION", "2024-12-01-preview").strip()
 
-    if not endpoint or not api_key:
-        raise HTTPException(
-            status_code=500,
-            detail="Azure OpenAI endpoint or API key is missing."
-        )
+    if not endpoint:
+        raise HTTPException(status_code=500, detail="AZURE_OPENAI_ENDPOINT is missing.")
+
+    if not api_key:
+        raise HTTPException(status_code=500, detail="AZURE_OPENAI_API_KEY is missing.")
 
     return AzureOpenAI(
         azure_endpoint=endpoint,
@@ -26,12 +26,12 @@ def get_client():
 def build_user_prompt(data: FarmInput) -> str:
     return f"""
 Farmer details:
-- Location: {data.location}
-- Farming goal: {data.farming_goal}
-- Farm size: {data.farm_size}
-- Main challenge: {data.challenge}
+Location: {data.location}
+Farming goal: {data.farming_goal}
+Farm size: {data.farm_size}
+Main challenge: {data.challenge}
 
-Create a farming plan with:
+Create a practical farming plan with:
 
 1. Farmer Profile Summary
 2. Best Farming Recommendation
@@ -43,18 +43,35 @@ Create a farming plan with:
 8. Cost-Saving Tips
 9. Beginner-Friendly Explanation
 
-Use simple language and practical advice.
+Use simple language.
+Be practical.
+Do not give vague advice.
 """
 
 
+def extract_text(response) -> str:
+    message = response.choices[0].message
+
+    if isinstance(message.content, str):
+        return message.content
+
+    if isinstance(message.content, list):
+        parts = []
+        for item in message.content:
+            if isinstance(item, dict) and "text" in item:
+                parts.append(item["text"])
+            elif hasattr(item, "text"):
+                parts.append(item.text)
+        return "\n".join(parts)
+
+    return str(message.content)
+
+
 def generate_farm_analysis(data: FarmInput) -> str:
-    deployment = os.getenv("AZURE_OPENAI_DEPLOYMENT")
+    deployment = os.getenv("AZURE_OPENAI_DEPLOYMENT", "").strip()
 
     if not deployment:
-        raise HTTPException(
-            status_code=500,
-            detail="AZURE_OPENAI_DEPLOYMENT is missing."
-        )
+        raise HTTPException(status_code=500, detail="AZURE_OPENAI_DEPLOYMENT is missing.")
 
     client = get_client()
 
@@ -65,10 +82,21 @@ def generate_farm_analysis(data: FarmInput) -> str:
                 {"role": "system", "content": SYSTEM_PROMPT},
                 {"role": "user", "content": build_user_prompt(data)}
             ],
-            max_completion_tokens=1200
+            max_completion_tokens=1500
         )
 
-        return response.choices[0].message.content
+        ai_text = extract_text(response).strip()
+
+        if not ai_text:
+            raise HTTPException(
+                status_code=500,
+                detail="Azure OpenAI returned an empty response."
+            )
+
+        return ai_text
+
+    except HTTPException:
+        raise
 
     except Exception as e:
         raise HTTPException(
