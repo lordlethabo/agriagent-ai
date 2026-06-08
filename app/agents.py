@@ -1,4 +1,22 @@
+# ==========================================
+# Specialist Agents for AgriAgent Global
+# ==========================================
+
+
+def safe_output(response):
+    """
+    Safely extracts text from Azure OpenAI Responses API.
+    """
+    if getattr(response, "output_text", None):
+        return response.output_text.strip()
+
+    return "No response generated."
+
+
 def call_agent(client, deployment, agent_name, farmer_data, task):
+    """
+    Generic function used by all specialist agents.
+    """
     response = client.responses.create(
         model=deployment,
         input=f"""
@@ -15,10 +33,11 @@ Rules:
 - Maximum 120 words.
 - Be practical.
 - Avoid vague advice.
+- Do not repeat other agents.
 """
     )
 
-    return response.output_text.strip()
+    return safe_output(response)
 
 
 def planner_agent(client, deployment, farmer_data):
@@ -102,6 +121,9 @@ def food_security_agent(client, deployment, farmer_data):
 
 
 def coordinator_agent(client, deployment, farmer_data, agent_results):
+    """
+    Combines all specialist agent outputs into one final strategy.
+    """
     response = client.responses.create(
         model=deployment,
         input=f"""
@@ -113,9 +135,10 @@ Farmer Data:
 Specialist Agent Results:
 {agent_results}
 
-Create a final practical strategy.
+Create the final practical farming strategy.
 
 Return:
+
 1. Final Recommended Strategy
 2. 30-Day Action Plan
 3. 90-Day Action Plan
@@ -125,7 +148,8 @@ Rules:
 - Maximum 5 bullet points per section.
 - Be practical.
 - Avoid repetition.
+- Focus on action.
 """
     )
 
-    return response.output_text.strip()
+    return safe_output(response)
