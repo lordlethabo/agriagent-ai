@@ -1,68 +1,131 @@
-from openai import AzureOpenAI
+def call_agent(client, deployment, agent_name, farmer_data, task):
+    response = client.responses.create(
+        model=deployment,
+        input=f"""
+You are {agent_name}.
+
+Farmer Data:
+{farmer_data}
+
+Task:
+{task}
+
+Rules:
+- Maximum 5 bullet points.
+- Maximum 120 words.
+- Be practical.
+- Avoid vague advice.
+"""
+    )
+
+    return response.output_text.strip()
 
 
 def planner_agent(client, deployment, farmer_data):
-
-    response = client.responses.create(
-        model=deployment,
-        input=f"""
-        You are Planner Agent.
-
-        Farmer Data:
-        {farmer_data}
-
-        Return:
-        - Farm layout
-        - Production strategy
-        - Scaling strategy
-
-        Maximum 5 bullet points.
-        """
+    return call_agent(
+        client,
+        deployment,
+        "Planner Agent",
+        farmer_data,
+        "Create the farm layout, production strategy, and scaling plan."
     )
-
-    return response.output_text
 
 
 def climate_agent(client, deployment, farmer_data):
-
-    response = client.responses.create(
-        model=deployment,
-        input=f"""
-        You are Climate Agent.
-
-        Farmer Data:
-        {farmer_data}
-
-        Analyze:
-        - Climate risks
-        - Rainfall
-        - Temperature
-        - Drought
-
-        Maximum 5 bullet points.
-        """
+    return call_agent(
+        client,
+        deployment,
+        "Climate Agent",
+        farmer_data,
+        "Analyze drought, heat, rainfall uncertainty, and climate risks."
     )
-
-    return response.output_text
 
 
 def water_agent(client, deployment, farmer_data):
+    return call_agent(
+        client,
+        deployment,
+        "Water Agent",
+        farmer_data,
+        "Recommend irrigation, water storage, and water conservation methods."
+    )
 
+
+def crop_agent(client, deployment, farmer_data):
+    return call_agent(
+        client,
+        deployment,
+        "Crop Agent",
+        farmer_data,
+        "Recommend suitable crops, crop rotation, and planting strategy."
+    )
+
+
+def finance_agent(client, deployment, farmer_data):
+    return call_agent(
+        client,
+        deployment,
+        "Finance Agent",
+        farmer_data,
+        "Estimate startup priorities, cost-saving ideas, funding options, and ROI targets."
+    )
+
+
+def market_agent(client, deployment, farmer_data):
+    return call_agent(
+        client,
+        deployment,
+        "Market Agent",
+        farmer_data,
+        "Recommend buyer types, market access strategy, pricing approach, and value-add options."
+    )
+
+
+def risk_agent(client, deployment, farmer_data):
+    return call_agent(
+        client,
+        deployment,
+        "Risk Agent",
+        farmer_data,
+        "Identify climate, pest, financial, market, and operational risks with mitigation actions."
+    )
+
+
+def food_security_agent(client, deployment, farmer_data):
+    return call_agent(
+        client,
+        deployment,
+        "Food Security Impact Agent",
+        farmer_data,
+        "Explain how this plan improves food security, income, climate resilience, and sustainability."
+    )
+
+
+def coordinator_agent(client, deployment, farmer_data, agent_results):
     response = client.responses.create(
         model=deployment,
         input=f"""
-        You are Water Agent.
+You are the Coordinator Agent.
 
-        Farmer Data:
-        {farmer_data}
+Farmer Data:
+{farmer_data}
 
-        Recommend:
-        - Irrigation
-        - Water storage
-        - Water conservation
+Specialist Agent Results:
+{agent_results}
 
-        Maximum 5 bullet points.
-        """
+Create a final practical strategy.
+
+Return:
+1. Final Recommended Strategy
+2. 30-Day Action Plan
+3. 90-Day Action Plan
+4. Key Metrics To Track
+
+Rules:
+- Maximum 5 bullet points per section.
+- Be practical.
+- Avoid repetition.
+"""
     )
 
-    return response.output_text
+    return response.output_text.strip()
