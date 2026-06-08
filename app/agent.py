@@ -1,41 +1,77 @@
-def generate_farm_analysis(
-    location,
-    farming_goal,
-    farm_size,
-    challenge
-):
+import os
+from fastapi import HTTPException
+from openai import AzureOpenAI
+from app.models import FarmInput
+from app.prompts import SYSTEM_PROMPT
 
-    recommendations = [
-        f"Recommended farming strategy for {farming_goal}",
-        f"Best practices for farming in {location}",
-        "Use water-saving techniques",
-        "Monitor soil health regularly"
-    ]
 
-    risks = [
-        "Weather variability",
-        "Pest infestations",
-        "Input cost increases"
-    ]
+def get_client():
+    endpoint = os.getenv("AZURE_OPENAI_ENDPOINT")
+    api_key = os.getenv("AZURE_OPENAI_API_KEY")
+    api_version = os.getenv("AZURE_OPENAI_API_VERSION", "2024-12-01-preview")
 
-    resources_needed = [
-        "Seeds",
-        "Fertilizer",
-        "Water source",
-        "Basic farming tools"
-    ]
+    if not endpoint or not api_key:
+        raise HTTPException(
+            status_code=500,
+            detail="Azure OpenAI endpoint or API key is missing."
+        )
 
-    action_plan = [
-        "Prepare land",
-        "Acquire inputs",
-        "Plant crops",
-        "Monitor growth",
-        "Harvest and sell"
-    ]
+    return AzureOpenAI(
+        azure_endpoint=endpoint,
+        api_key=api_key,
+        api_version=api_version
+    )
 
-    return {
-        "recommendations": recommendations,
-        "risks": risks,
-        "resources_needed": resources_needed,
-        "action_plan": action_plan
-    }
+
+def build_user_prompt(data: FarmInput) -> str:
+    return f"""
+Farmer details:
+- Location: {data.location}
+- Farming goal: {data.farming_goal}
+- Farm size: {data.farm_size}
+- Main challenge: {data.challenge}
+
+Create a farming plan with:
+
+1. Farmer Profile Summary
+2. Best Farming Recommendation
+3. Crop Suitability
+4. Step-by-Step Action Plan
+5. Required Resources
+6. Risks and Warnings
+7. Water and Climate Strategy
+8. Cost-Saving Tips
+9. Beginner-Friendly Explanation
+
+Use simple language and practical advice.
+"""
+
+
+def generate_farm_analysis(data: FarmInput) -> str:
+    deployment = os.getenv("AZURE_OPENAI_DEPLOYMENT")
+
+    if not deployment:
+        raise HTTPException(
+            status_code=500,
+            detail="AZURE_OPENAI_DEPLOYMENT is missing."
+        )
+
+    client = get_client()
+
+    try:
+        response = client.chat.completions.create(
+            model=deployment,
+            messages=[
+                {"role": "system", "content": SYSTEM_PROMPT},
+                {"role": "user", "content": build_user_prompt(data)}
+            ],
+            max_completion_tokens=1200
+        )
+
+        return response.choices[0].message.content
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Azure OpenAI request failed: {str(e)}"
+        )
