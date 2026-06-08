@@ -3,7 +3,17 @@ from fastapi import HTTPException
 from openai import AzureOpenAI
 
 from app.models import FarmInput
-from app.prompts import SYSTEM_PROMPT
+from app.agents import (
+    planner_agent,
+    climate_agent,
+    water_agent,
+    crop_agent,
+    finance_agent,
+    market_agent,
+    risk_agent,
+    food_security_agent,
+    coordinator_agent
+)
 
 
 def get_client():
@@ -24,90 +34,48 @@ def get_client():
     )
 
 
-def build_user_prompt(data: FarmInput) -> str:
+def build_farmer_data(data: FarmInput) -> str:
     return f"""
-{SYSTEM_PROMPT}
-
-Farmer Profile:
-- Location: {data.location}
-- Farming Goal: {data.farming_goal}
-- Farm Size: {data.farm_size}
-- Main Challenge: {data.challenge}
-
-Create a complete multi-agent farming plan.
-
-STRICT OUTPUT RULES:
-- Complete every section.
-- Maximum 5 bullet points per section.
-- Maximum 120 words per section.
-- No long essays.
-- Avoid repeating the same advice.
-- Be practical and specific.
-
-Sections required:
-1. Executive Summary
-2. Planner Agent Analysis
-3. Climate Agent Analysis
-4. Water Agent Analysis
-5. Crop Agent Analysis
-6. Finance Agent Analysis
-7. Market Agent Analysis
-8. Risk Agent Analysis
-9. Food Security Impact Analysis
-10. Final Recommended Farming Strategy
-11. 30-Day Action Plan
-12. 90-Day Action Plan
-13. Key Metrics To Track
+Location: {data.location}
+Farming Goal: {data.farming_goal}
+Farm Size: {data.farm_size}
+Main Challenge: {data.challenge}
 """
 
 
-def extract_response_text(response) -> str:
-    if getattr(response, "output_text", None):
-        return response.output_text.strip()
-
-    text_parts = []
-
-    for item in getattr(response, "output", []) or []:
-        for content in getattr(item, "content", []) or []:
-            text = getattr(content, "text", None)
-            if text:
-                text_parts.append(text)
-            elif isinstance(content, dict) and content.get("text"):
-                text_parts.append(content["text"])
-
-    return "\n".join(text_parts).strip()
-
-
-def generate_farm_analysis(data: FarmInput) -> str:
+def run_all_agents(data: FarmInput):
     deployment = os.getenv("AZURE_OPENAI_DEPLOYMENT", "").strip()
 
     if not deployment:
         raise HTTPException(status_code=500, detail="AZURE_OPENAI_DEPLOYMENT is missing.")
 
     client = get_client()
+    farmer_data = build_farmer_data(data)
 
-    try:
-        response = client.responses.create(
-            model=deployment,
-            input=build_user_prompt(data),
-            max_output_tokens=4000
-        )
+    agent_results = {
+        "planner_agent": planner_agent(client, deployment, farmer_data),
+        "climate_agent": climate_agent(client, deployment, farmer_data),
+        "water_agent": water_agent(client, deployment, farmer_data),
+        "crop_agent": crop_agent(client, deployment, farmer_data),
+        "finance_agent": finance_agent(client, deployment, farmer_data),
+        "market_agent": market_agent(client, deployment, farmer_data),
+        "risk_agent": risk_agent(client, deployment, farmer_data),
+        "food_security_agent": food_security_agent(client, deployment, farmer_data),
+    }
 
-        ai_text = extract_response_text(response)
+    final_strategy = coordinator_agent(
+        client,
+        deployment,
+        farmer_data,
+        agent_results
+    )
 
-        if not ai_text:
-            raise HTTPException(
-                status_code=500,
-                detail="Azure OpenAI returned an empty response."
-            )
+    return {
+        "agent_results": agent_results,
+        "final_strategy": final_strategy
+    }
 
-        return ai_text
 
-    except HTTPException:
-        raise
-
-    except Exception as e:
-        raise HTTPException(
-            status_code=500,
-            detail=f"Azure OpenAI request failed: {str(e)}"
-        )
+def generate_farm_analysis(data: FarmInput):
+    results = run_all_agents(data)
+    return results["final_strategy"]
