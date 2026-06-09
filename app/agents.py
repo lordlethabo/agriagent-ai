@@ -5,10 +5,29 @@
 
 def safe_output(response):
     """Safely extract text from Azure OpenAI Responses API."""
+
     if getattr(response, "output_text", None):
         return response.output_text.strip()
 
-    return "No response generated."
+    text_parts = []
+
+    for item in getattr(response, "output", []) or []:
+        for content in getattr(item, "content", []) or []:
+            text = getattr(content, "text", None)
+
+            if text:
+                text_parts.append(text)
+
+            elif isinstance(content, dict):
+                if content.get("text"):
+                    text_parts.append(content["text"])
+                elif content.get("content"):
+                    text_parts.append(str(content["content"]))
+
+    if text_parts:
+        return "\n".join(text_parts).strip()
+
+    return str(response)
 
 
 def call_agent(client, deployment, agent_name, farmer_data, task, max_tokens=300):
@@ -96,7 +115,7 @@ Rules:
 - Keep it concise.
 - Focus on global challenge impact.
 """,
-        max_output_tokens=400
+        max_output_tokens=500
     )
 
     return safe_output(response)
