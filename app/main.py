@@ -1,67 +1,77 @@
 import os
-from fastapi import HTTPException
-from openai import AzureOpenAI
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 from app.models import FarmInput
-from app.agents import (
-    planner_agent,
-    water_agent,
-    risk_agent,
-    global_impact_agent
+from app.agent import generate_farm_analysis, run_all_agents
+
+
+app = FastAPI(
+    title="AgriAgent Global",
+    description="Multi-agent climate and food security intelligence platform",
+    version="2.0.0"
 )
 
 
-def get_client():
-    endpoint = os.getenv("AZURE_OPENAI_ENDPOINT", "").strip()
-    api_key = os.getenv("AZURE_OPENAI_API_KEY", "").strip()
-    api_version = os.getenv("AZURE_OPENAI_API_VERSION", "2025-04-01-preview").strip()
-
-    if not endpoint:
-        raise HTTPException(status_code=500, detail="AZURE_OPENAI_ENDPOINT is missing.")
-
-    if not api_key:
-        raise HTTPException(status_code=500, detail="AZURE_OPENAI_API_KEY is missing.")
-
-    return AzureOpenAI(
-        azure_endpoint=endpoint,
-        api_key=api_key,
-        api_version=api_version
-    )
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
-def build_farmer_data(data: FarmInput) -> str:
-    return f"""
-Location: {data.location}
-Farming Goal: {data.farming_goal}
-Farm Size: {data.farm_size}
-Main Challenge: {data.challenge}
-"""
-
-
-def run_all_agents(data: FarmInput):
-    deployment = os.getenv("AZURE_OPENAI_DEPLOYMENT", "").strip()
-
-    if not deployment:
-        raise HTTPException(status_code=500, detail="AZURE_OPENAI_DEPLOYMENT is missing.")
-
-    client = get_client()
-    farmer_data = build_farmer_data(data)
-
-    agent_results = {
-        "planner_agent": planner_agent(client, deployment, farmer_data),
-        "water_agent": water_agent(client, deployment, farmer_data),
-        "risk_agent": risk_agent(client, deployment, farmer_data),
-        "global_impact_agent": global_impact_agent(client, deployment, farmer_data)
+@app.get("/")
+def home():
+    return {
+        "message": "Welcome to AgriAgent Global",
+        "docs": "/docs",
+        "status": "API is running successfully"
     }
+
+
+@app.get("/health")
+def health_check():
+    return {
+        "status": "healthy",
+        "endpoint_loaded": bool(os.getenv("AZURE_OPENAI_ENDPOINT")),
+        "api_key_loaded": bool(os.getenv("AZURE_OPENAI_API_KEY")),
+        "deployment_loaded": bool(os.getenv("AZURE_OPENAI_DEPLOYMENT")),
+        "api_version": os.getenv("AZURE_OPENAI_API_VERSION")
+    }
+
+
+@app.post("/analyze")
+def analyze_farm(data: FarmInput):
+    ai_plan = generate_farm_analysis(data)
 
     return {
-        "agent_results": agent_results,
-        "global_challenge_positioning": "AgriAgent Global supports food security, climate resilience, water sustainability, and rural economic opportunity.",
-        "status": "Global impact multi-agent analysis completed successfully."
+        "farmer_profile": {
+            "location": data.location,
+            "farming_goal": data.farming_goal,
+            "farm_size": data.farm_size,
+            "challenge": data.challenge
+        },
+        "ai_farming_plan": ai_plan,
+        "model_used": os.getenv("AZURE_OPENAI_DEPLOYMENT"),
+        "status": "AI farm analysis completed successfully"
     }
 
 
-def generate_farm_analysis(data: FarmInput):
+@app.post("/multi-agent-analysis")
+def multi_agent_analysis(data: FarmInput):
     results = run_all_agents(data)
 
-    return results["agent_results"]
+    return {
+        "farmer_profile": {
+            "location": data.location,
+            "farming_goal": data.farming_goal,
+            "farm_size": data.farm_size,
+            "challenge": data.challenge
+        },
+        "agent_results": results["agent_results"],
+        "global_challenge_positioning": results["global_challenge_positioning"],
+        "model_used": os.getenv("AZURE_OPENAI_DEPLOYMENT"),
+        "status": results["status"]
+    }
