@@ -57,7 +57,7 @@ def run_all_agents(data: FarmInput):
     return {
         "agent_results": agent_results,
         "global_challenge_positioning": "AgriAgent Global supports food security, climate resilience, water sustainability, and rural economic opportunity.",
-        "status": "Global impact multi-agent analysis completed."
+        "status": "Global impact multi-agent analysis completed successfully."
     }
 
 
