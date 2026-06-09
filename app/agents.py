@@ -4,34 +4,50 @@
 
 
 def safe_output(response):
-    """Safely extract text from Azure OpenAI Responses API."""
+    """
+    Safely extract visible text from Azure OpenAI Responses API.
+    """
 
     if getattr(response, "output_text", None):
         return response.output_text.strip()
 
-    text_parts = []
+    try:
+        outputs = []
 
-    for item in getattr(response, "output", []) or []:
-        for content in getattr(item, "content", []) or []:
-            text = getattr(content, "text", None)
+        for item in response.output:
 
-            if text:
-                text_parts.append(text)
+            if hasattr(item, "content"):
 
-            elif isinstance(content, dict):
-                if content.get("text"):
-                    text_parts.append(content["text"])
-                elif content.get("content"):
-                    text_parts.append(str(content["content"]))
+                for content in item.content:
 
-    if text_parts:
-        return "\n".join(text_parts).strip()
+                    if hasattr(content, "text"):
+                        outputs.append(content.text)
 
-    return str(response)
+                    elif isinstance(content, dict):
+
+                        if content.get("text"):
+                            outputs.append(content["text"])
+
+        if outputs:
+            return "\n".join(outputs).strip()
+
+    except Exception:
+        pass
+
+    return "Agent completed but returned no visible text."
 
 
-def call_agent(client, deployment, agent_name, farmer_data, task, max_tokens=300):
-    """Reusable function for specialist agents."""
+def call_agent(
+    client,
+    deployment,
+    agent_name,
+    farmer_data,
+    task
+):
+    """
+    Generic specialist agent function.
+    """
+
     response = client.responses.create(
         model=deployment,
         input=f"""
@@ -44,50 +60,100 @@ Task:
 {task}
 
 Rules:
-- Maximum 3 bullet points.
-- Maximum 80 words.
-- Be direct.
-- Be practical.
-- Focus on food security, climate resilience, water scarcity, and income.
-- Avoid repetition.
+- Return exactly 3 bullet points.
+- Maximum 20 words per bullet.
+- Do not explain reasoning.
+- Return only the final answer.
+- Focus on practical action.
+- Focus on food security, climate resilience, water sustainability, and income generation.
 """,
-        max_output_tokens=max_tokens
+        max_output_tokens=1200,
+        text={
+            "verbosity": "low"
+        }
     )
 
     return safe_output(response)
 
 
-def planner_agent(client, deployment, farmer_data):
+# ==========================================
+# Planner Agent
+# ==========================================
+def planner_agent(
+    client,
+    deployment,
+    farmer_data
+):
     return call_agent(
         client,
         deployment,
         "Planner Agent",
         farmer_data,
-        "Create a short farm layout, production strategy, and scaling plan."
+        """
+Create:
+- Farm layout
+- Production strategy
+- Scaling strategy
+"""
     )
 
 
-def water_agent(client, deployment, farmer_data):
+# ==========================================
+# Water Agent
+# ==========================================
+def water_agent(
+    client,
+    deployment,
+    farmer_data
+):
     return call_agent(
         client,
         deployment,
         "Water Agent",
         farmer_data,
-        "Recommend water-saving irrigation, storage, and conservation actions."
+        """
+Recommend:
+- Irrigation strategy
+- Water storage
+- Water conservation
+"""
     )
 
 
-def risk_agent(client, deployment, farmer_data):
+# ==========================================
+# Risk Agent
+# ==========================================
+def risk_agent(
+    client,
+    deployment,
+    farmer_data
+):
     return call_agent(
         client,
         deployment,
         "Risk Agent",
         farmer_data,
-        "Identify climate, pest, financial, market, and operational risks with mitigation actions."
+        """
+Identify:
+- Climate risks
+- Pest risks
+- Financial risks
+- Market risks
+
+Provide mitigation actions.
+"""
     )
 
 
-def global_impact_agent(client, deployment, farmer_data):
+# ==========================================
+# Global Impact Agent
+# ==========================================
+def global_impact_agent(
+    client,
+    deployment,
+    farmer_data
+):
+
     response = client.responses.create(
         model=deployment,
         input=f"""
@@ -96,12 +162,12 @@ You are Global Impact Agent.
 Farmer Data:
 {farmer_data}
 
-Return exactly this format:
+Return:
 
-Food Security Score: /100
-Climate Resilience Score: /100
-Water Sustainability Score: /100
-Economic Impact Score: /100
+Food Security Score: X/100
+Climate Resilience Score: X/100
+Water Sustainability Score: X/100
+Economic Impact Score: X/100
 
 SDG Alignment:
 - SDG 1: No Poverty
@@ -111,11 +177,15 @@ SDG Alignment:
 - SDG 13: Climate Action
 
 Rules:
-- Explain each score in 1 short sentence.
-- Keep it concise.
-- Focus on global challenge impact.
+- Keep responses concise.
+- One sentence explanation per score.
+- Focus on measurable impact.
+- Do not explain reasoning.
 """,
-        max_output_tokens=500
+        max_output_tokens=1500,
+        text={
+            "verbosity": "low"
+        }
     )
 
     return safe_output(response)
