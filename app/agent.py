@@ -6,7 +6,6 @@ from app.models import FarmInput
 from app.agents import (
     planner_agent,
     water_agent,
-    crop_agent,
     risk_agent,
     coordinator_agent
 )
@@ -48,12 +47,10 @@ def run_all_agents(data: FarmInput):
     client = get_client()
     farmer_data = build_farmer_data(data)
 
-    # Fast multi-agent mode:
-    # 4 specialist agents + 1 coordinator agent
+    # Fast demo mode: fewer AI calls to avoid 504 timeout
     agent_results = {
         "planner_agent": planner_agent(client, deployment, farmer_data),
         "water_agent": water_agent(client, deployment, farmer_data),
-        "crop_agent": crop_agent(client, deployment, farmer_data),
         "risk_agent": risk_agent(client, deployment, farmer_data),
     }
 
