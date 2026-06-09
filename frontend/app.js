@@ -19,13 +19,24 @@ function createScoreCard(title, score) {
   return `
     <div class="score-card">
       <p>${title}</p>
-      <strong>${score}</strong>
-
+      <strong>${score}/100</strong>
       <div class="progress-track">
-        <div
-          class="progress-fill"
-          style="width:${score}%">
-        </div>
+        <div class="progress-fill" style="width:${score}%"></div>
+      </div>
+    </div>
+  `;
+}
+
+function createOverallScore(score) {
+  return `
+    <div class="overall-score-card">
+      <div>
+        <p>Overall Sustainability Score</p>
+        <h3>${score}/100</h3>
+        <span>Combined food security, climate, water, and economic impact rating.</span>
+      </div>
+      <div class="overall-ring">
+        <span>${score}</span>
       </div>
     </div>
   `;
@@ -43,15 +54,13 @@ function createAgentCard(title, content) {
 function showLoading() {
   document.getElementById("results").innerHTML = `
     <div class="agent-card">
-      <h3>Analyzing Farm Profile</h3>
-      <pre>
-Planner Agent is evaluating strategy...
+      <h3>Running Multi-Agent Analysis</h3>
+      <pre>Planner Agent is evaluating strategy...
 Water Agent is evaluating sustainability...
 Risk Agent is evaluating threats...
-Global Impact Agent is calculating impact...
+Global Impact Agent is calculating impact scores...
 
-Please wait...
-      </pre>
+Please wait while AgriAgent Global completes the analysis.</pre>
     </div>
   `;
 }
@@ -71,7 +80,6 @@ async function analyzeFarm() {
   const results = document.getElementById("results");
 
   status.textContent = "Running Analysis";
-
   scoreGrid.innerHTML = "";
   showLoading();
 
@@ -92,53 +100,43 @@ async function analyzeFarm() {
     });
 
     if (!response.ok) {
-      throw new Error(
-        `API returned status ${response.status}`
-      );
+      throw new Error(`API returned status ${response.status}`);
     }
 
     const data = await response.json();
+    const agents = data.agent_results;
+    const impact = agents.global_impact_agent || "";
 
-    const planner =
-      data.agent_results.planner_agent || "No response.";
+    const foodScore = getScore(impact, "Food Security Score");
+    const climateScore = getScore(impact, "Climate Resilience Score");
+    const waterScore = getScore(impact, "Water Sustainability Score");
+    const economicScore = getScore(impact, "Economic Impact Score");
 
-    const water =
-      data.agent_results.water_agent || "No response.";
+    const scores = [foodScore, climateScore, waterScore, economicScore].filter(
+      score => score > 0
+    );
 
-    const risk =
-      data.agent_results.risk_agent || "No response.";
-
-    const impact =
-      data.agent_results.global_impact_agent || "No response.";
-
-    const foodScore =
-      getScore(impact, "Food Security Score");
-
-    const climateScore =
-      getScore(impact, "Climate Resilience Score");
-
-    const waterScore =
-      getScore(impact, "Water Sustainability Score");
-
-    const economicScore =
-      getScore(impact, "Economic Impact Score");
+    const overallScore =
+      scores.length > 0
+        ? Math.round(scores.reduce((sum, score) => sum + score, 0) / scores.length)
+        : 0;
 
     scoreGrid.innerHTML =
+      createOverallScore(overallScore) +
       createScoreCard("Food Security", foodScore) +
       createScoreCard("Climate Resilience", climateScore) +
       createScoreCard("Water Sustainability", waterScore) +
       createScoreCard("Economic Impact", economicScore);
 
     results.innerHTML =
-      createAgentCard("Planner Agent", planner) +
-      createAgentCard("Water Agent", water) +
-      createAgentCard("Risk Agent", risk) +
-      createAgentCard("Global Impact Agent", impact);
+      createAgentCard("Planner Agent", agents.planner_agent || "No response.") +
+      createAgentCard("Water Agent", agents.water_agent || "No response.") +
+      createAgentCard("Risk Agent", agents.risk_agent || "No response.") +
+      createAgentCard("Global Impact Agent", impact || "No response.");
 
     status.textContent = "Analysis Complete";
   } catch (error) {
     console.error(error);
-
     status.textContent = "Error";
 
     showError(
