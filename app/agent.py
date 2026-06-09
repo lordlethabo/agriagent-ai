@@ -5,13 +5,9 @@ from openai import AzureOpenAI
 from app.models import FarmInput
 from app.agents import (
     planner_agent,
-    climate_agent,
     water_agent,
     crop_agent,
-    finance_agent,
-    market_agent,
     risk_agent,
-    food_security_agent,
     coordinator_agent
 )
 
@@ -52,15 +48,13 @@ def run_all_agents(data: FarmInput):
     client = get_client()
     farmer_data = build_farmer_data(data)
 
+    # Fast multi-agent mode:
+    # 4 specialist agents + 1 coordinator agent
     agent_results = {
         "planner_agent": planner_agent(client, deployment, farmer_data),
-        "climate_agent": climate_agent(client, deployment, farmer_data),
         "water_agent": water_agent(client, deployment, farmer_data),
         "crop_agent": crop_agent(client, deployment, farmer_data),
-        "finance_agent": finance_agent(client, deployment, farmer_data),
-        "market_agent": market_agent(client, deployment, farmer_data),
         "risk_agent": risk_agent(client, deployment, farmer_data),
-        "food_security_agent": food_security_agent(client, deployment, farmer_data),
     }
 
     final_strategy = coordinator_agent(
