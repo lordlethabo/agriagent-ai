@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>AgriAgent Global</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body class="bg-[#f5f7f2] text-slate-950 overflow-x-hidden">
+
+  <header class="fixed top-0 left-0 right-0 z-50 border-b border-white/40 bg-white/75 backdrop-blur-2xl">
+    <nav class="mx-auto flex max-w-7xl items-center justify-between px-5 py-4 lg:px-8">
+      <a href="#" class="flex items-center gap-3">
+        <div class="flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-600 text-sm font-black text-white shadow-lg">
+          AG
+        </div>
+        <div>
+          <p class="text-base font-black">AgriAgent Global</p>
+          <p class="text-xs text-slate-500">AI Food Security Platform</p>
+        </div>
+      </a>
+
+      <button id="menuBtn" class="flex h-11 w-11 items-center justify-center rounded-full bg-slate-100 text-xl font-bold md:hidden">
+        ≡
+      </button>
+
+      <div class="hidden items-center gap-8 text-sm font-semibold text-slate-700 md:flex">
+        <a href="#features" class="hover:text-emerald-700">Features</a>
+        <a href="#dashboard" class="hover:text-emerald-700">Dashboard</a>
+        <a href="#impact" class="hover:text-emerald-700">Impact</a>
+        <a href="#demo" class="rounded-full bg-slate-950 px-5 py-3 text-white hover:bg-emerald-700">Launch Demo</a>
+      </div>
+    </nav>
+
+    <div id="mobileMenu" class="hidden border-t border-slate-200 bg-white px-5 py-4 md:hidden">
+      <div class="flex flex-col gap-3 text-sm font-semibold">
+        <a href="#features" class="mobile-link">Features</a>
+        <a href="#dashboard" class="mobile-link">Dashboard</a>
+        <a href="#impact" class="mobile-link">Impact</a>
+        <a href="#demo" class="rounded-2xl bg-slate-950 px-4 py-3 text-center text-white">Launch Demo</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="pt-28">
+
+    <section class="mx-auto grid max-w-7xl items-center gap-12 px-5 py-12 lg:grid-cols-2 lg:px-8 lg:py-24">
+      <div class="text-center lg:text-left">
+        <div class="mb-5 inline-flex rounded-full border border-emerald-200 bg-white/80 px-4 py-2 text-sm font-semibold text-emerald-700 shadow-sm">
+          Microsoft Agents League • Reasoning Agents Track
+        </div>
+
+        <h1 class="text-4xl font-black tracking-tight sm:text-5xl md:text-6xl lg:text-7xl">
+          Multi-agent AI for global food security.
+        </h1>
+
+        <p class="mx-auto mt-6 max-w-2xl text-base leading-8 text-slate-600 sm:text-lg lg:mx-0">
+          AgriAgent Global helps farmers, NGOs, governments, and cooperatives make climate-smart agricultural decisions using specialized AI agents.
+        </p>
+
+        <div class="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center lg:justify-start">
+          <a href="#demo" class="touch-btn rounded-full bg-slate-950 px-8 py-4 text-center font-bold text-white shadow-xl hover:bg-emerald-700">
+            Analyze a Farm
+          </a>
+          <a href="#dashboard" class="touch-btn rounded-full border border-slate-300 bg-white px-8 py-4 text-center font-bold text-slate-900 hover:border-emerald-500">
+            View Agents
+          </a>
+        </div>
+      </div>
+
+      <div class="relative">
+        <div class="absolute -inset-6 rounded-[3rem] bg-gradient-to-br from-emerald-300 via-lime-200 to-sky-200 opacity-60 blur-3xl"></div>
+
+        <div class="relative rounded-[2rem] border border-white/70 bg-white/70 p-4 shadow-2xl backdrop-blur-xl">
+          <div class="rounded-[1.5rem] bg-slate-950 p-5 text-white">
+            <div class="flex items-center justify-between">
+              <p class="text-sm font-semibold text-emerald-300">Live Impact Snapshot</p>
+              <span class="rounded-full bg-emerald-400/20 px-3 py-1 text-xs text-emerald-200">AI Active</span>
+            </div>
+
+            <div class="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-2">
+              <div class="metric-card"><p>Food Security</p><strong>72</strong></div>
+              <div class="metric-card"><p>Water Score</p><strong>54</strong></div>
+              <div class="metric-card"><p>Jobs Potential</p><strong>120+</strong></div>
+              <div class="metric-card"><p>SDGs</p><strong>5</strong></div>
+            </div>
+
+            <div class="mt-6 rounded-2xl bg-white/10 p-4">
+              <p class="text-xs text-slate-400">Agent Flow</p>
+              <p class="mt-2 text-sm text-slate-200">Planner → Water → Risk → Global Impact</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="features" class="mx-auto max-w-7xl px-5 py-16 lg:px-8">
+      <h2 class="text-3xl font-black sm:text-5xl">A reasoning system for agriculture.</h2>
+      <p class="mt-4 max-w-3xl text-slate-600">
+        Each specialist agent analyzes a different part of the farming challenge.
+      </p>
+
+      <div class="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        <div class="feature-card"><h3>Planner Agent</h3><p>Creates layout, production strategy, and scale-up roadmap.</p></div>
+        <div class="feature-card"><h3>Water Agent</h3><p>Recommends irrigation, storage, and conservation actions.</p></div>
+        <div class="feature-card"><h3>Risk Agent</h3><p>Identifies drought, pest, market, and financial risks.</p></div>
+        <div class="feature-card"><h3>Global Impact Agent</h3><p>Scores food security, climate resilience, water, and economic impact.</p></div>
+      </div>
+    </section>
+
+    <section id="demo" class="mx-auto max-w-7xl px-5 py-16 lg:px-8">
+      <div class="grid gap-8 lg:grid-cols-[380px_1fr]">
+
+        <aside class="rounded-[2rem] border border-white/70 bg-white/80 p-6 shadow-xl backdrop-blur-xl lg:sticky lg:top-28 lg:self-start">
+          <h2 class="text-2xl font-black">Analyze a Farm</h2>
+          <p class="mt-2 text-sm text-slate-500">Enter a location, goal, farm size, and challenge.</p>
+
+          <div class="mt-6 space-y-4">
+            <input id="location" class="input" value="Limpopo, South Africa" placeholder="Location" />
+            <input id="goal" class="input" value="Improve food security and create jobs" placeholder="Farming goal" />
+            <input id="size" class="input" value="50 hectares" placeholder="Farm size" />
+            <textarea id="challenge" class="input min-h-28" placeholder="Main challenge">Climate change, drought, youth unemployment, poor soil fertility, and limited market access</textarea>
+
+            <button onclick="analyzeFarm()" class="touch-btn h-12 w-full rounded-2xl bg-slate-950 font-bold text-white shadow-lg hover:bg-emerald-700">
+              Run Multi-Agent Analysis
+            </button>
+          </div>
+        </aside>
+
+        <section id="dashboard" class="rounded-[2rem] border border-white/70 bg-white/60 p-5 shadow-xl backdrop-blur-xl">
+          <div class="flex flex-col gap-2 border-b border-slate-200 pb-5 md:flex-row md:items-center md:justify-between">
+            <div>
+              <h2 class="text-2xl font-black">Agent Dashboard</h2>
+              <p class="text-sm text-slate-500">Specialist agent outputs and global impact scores.</p>
+            </div>
+            <span id="status" class="rounded-full bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-600">Ready</span>
+          </div>
+
+          <div id="scoreGrid" class="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4"></div>
+          <div id="results" class="mt-6 grid gap-5"></div>
+        </section>
+      </div>
+    </section>
+
+    <section id="impact" class="mx-auto max-w-7xl px-5 py-16 lg:px-8">
+      <div class="rounded-[2rem] bg-slate-950 p-8 text-white lg:p-12">
+        <h2 class="text-3xl font-black sm:text-5xl">Global challenge. Global opportunity.</h2>
+        <p class="mt-5 max-w-3xl text-slate-300">
+          AgriAgent Global connects AI reasoning to food security, water scarcity, climate adaptation, youth employment, and sustainable development.
+        </p>
+
+        <div class="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+          <div class="impact-card">SDG 1<br><span>No Poverty</span></div>
+          <div class="impact-card">SDG 2<br><span>Zero Hunger</span></div>
+          <div class="impact-card">SDG 6<br><span>Clean Water</span></div>
+          <div class="impact-card">SDG 8<br><span>Decent Work</span></div>
+          <div class="impact-card">SDG 13<br><span>Climate Action</span></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <nav class="fixed bottom-4 left-1/2 z-50 flex w-[92%] max-w-md -translate-x-1/2 justify-around rounded-full border border-white/70 bg-white/85 px-3 py-3 shadow-2xl backdrop-blur-xl md:hidden">
+    <a href="#features" class="text-sm font-black">Agents</a>
+    <a href="#demo" class="text-sm font-black">Demo</a>
+    <a href="#impact" class="text-sm font-black">Impact</a>
+  </nav>
+
+  <script src="app.js"></script>
+</body>
+</html>
