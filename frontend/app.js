@@ -27,6 +27,21 @@ function createScoreCard(title, score) {
   `;
 }
 
+function createRecommendationCard(recommendation, confidence, agents) {
+  const reasons = agents.map(agent => `<li>${agent.finding}</li>`).join("");
+
+  return `
+    <div class="recommendation-card">
+      <h3>Recommendation</h3>
+      <p><strong>Best action:</strong> ${recommendation}</p>
+      <p><strong>Confidence:</strong> ${confidence}%</p>
+
+      <h4>Why this recommendation?</h4>
+      <ul>${reasons}</ul>
+    </div>
+  `;
+}
+
 function createTimeline(agents) {
   return `
     <div class="agent-card">
@@ -44,17 +59,11 @@ function createTimeline(agents) {
   `;
 }
 
-function createRecommendationCard(recommendation, confidence, agents) {
-  const reasons = agents.map(agent => `<li>${agent.finding}</li>`).join("");
-
+function createAgentCard(title, content) {
   return `
-    <div class="recommendation-card">
-      <h3>Recommendation</h3>
-      <p><strong>Best action:</strong> ${recommendation}</p>
-      <p><strong>Confidence:</strong> ${confidence}%</p>
-
-      <h4>Why this recommendation?</h4>
-      <ul>${reasons}</ul>
+    <div class="agent-card">
+      <h3>${title}</h3>
+      <pre>${content || "No result returned."}</pre>
     </div>
   `;
 }
@@ -63,15 +72,6 @@ function createSafetyNote(note) {
   return `
     <div class="safety-note">
       ${note}
-    </div>
-  `;
-}
-
-function createAgentCard(title, content) {
-  return `
-    <div class="agent-card">
-      <h3>${title}</h3>
-      <pre>${content}</pre>
     </div>
   `;
 }
@@ -101,7 +101,6 @@ function showError(message) {
 async function analyzeFarm() {
   const status = document.getElementById("status");
   const scoreGrid = document.getElementById("scoreGrid");
-  const results = document.getElementById("results");
 
   status.textContent = "Running Analysis";
   scoreGrid.innerHTML = "";
@@ -144,18 +143,21 @@ async function analyzeFarm() {
       createScoreCard("Water Sustainability", waterScore) +
       createScoreCard("Economic Impact", economicScore);
 
-    results.innerHTML =
+    document.getElementById("results").innerHTML =
       createRecommendationCard(
         data.recommendation || "No recommendation returned.",
         data.confidence || 0,
         timelineAgents
       ) +
       createTimeline(timelineAgents) +
-      createAgentCard("Planner Agent", agents.planner_agent || "No response.") +
-      createAgentCard("Water Agent", agents.water_agent || "No response.") +
-      createAgentCard("Risk Agent", agents.risk_agent || "No response.") +
-      createAgentCard("Global Impact Agent", agents.global_impact_agent || "No response.") +
-      createSafetyNote(data.safety_note || "AI-assisted guidance only. Confirm major decisions with local experts.");
+      createAgentCard("Planner Agent", agents.planner_agent) +
+      createAgentCard("Water Agent", agents.water_agent) +
+      createAgentCard("Risk Agent", agents.risk_agent) +
+      createAgentCard("Global Impact Agent", agents.global_impact_agent) +
+      createSafetyNote(
+        data.safety_note ||
+        "AI-assisted guidance only. Confirm major decisions with local agricultural experts."
+      );
 
     status.textContent = "Analysis Complete";
   } catch (error) {
