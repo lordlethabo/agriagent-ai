@@ -27,17 +27,42 @@ function createScoreCard(title, score) {
   `;
 }
 
-function createOverallScore(score) {
+function createTimeline(agents) {
   return `
-    <div class="overall-score-card">
-      <div>
-        <p>Overall Sustainability Score</p>
-        <h3>${score}/100</h3>
-        <span>Combined food security, climate, water, and economic impact rating.</span>
+    <div class="agent-card">
+      <h3>Agent Reasoning Timeline</h3>
+      <div class="timeline">
+        ${agents.map(agent => `
+          <div class="timeline-step">
+            <strong>${agent.name}</strong>
+            <span>${agent.status}</span>
+            <p>${agent.finding}</p>
+          </div>
+        `).join("")}
       </div>
-      <div class="overall-ring">
-        <span>${score}</span>
-      </div>
+    </div>
+  `;
+}
+
+function createRecommendationCard(recommendation, confidence, agents) {
+  const reasons = agents.map(agent => `<li>${agent.finding}</li>`).join("");
+
+  return `
+    <div class="recommendation-card">
+      <h3>Recommendation</h3>
+      <p><strong>Best action:</strong> ${recommendation}</p>
+      <p><strong>Confidence:</strong> ${confidence}%</p>
+
+      <h4>Why this recommendation?</h4>
+      <ul>${reasons}</ul>
+    </div>
+  `;
+}
+
+function createSafetyNote(note) {
+  return `
+    <div class="safety-note">
+      ${note}
     </div>
   `;
 }
@@ -59,8 +84,7 @@ function showLoading() {
 Water Agent is evaluating sustainability...
 Risk Agent is evaluating threats...
 Global Impact Agent is calculating impact scores...
-
-Please wait while AgriAgent Global completes the analysis.</pre>
+Coordinator Agent is preparing the final recommendation.</pre>
     </div>
   `;
 }
@@ -104,7 +128,9 @@ async function analyzeFarm() {
     }
 
     const data = await response.json();
-    const agents = data.agent_results;
+
+    const agents = data.agent_results || {};
+    const timelineAgents = data.agents || [];
     const impact = agents.global_impact_agent || "";
 
     const foodScore = getScore(impact, "Food Security Score");
@@ -112,27 +138,24 @@ async function analyzeFarm() {
     const waterScore = getScore(impact, "Water Sustainability Score");
     const economicScore = getScore(impact, "Economic Impact Score");
 
-    const scores = [foodScore, climateScore, waterScore, economicScore].filter(
-      score => score > 0
-    );
-
-    const overallScore =
-      scores.length > 0
-        ? Math.round(scores.reduce((sum, score) => sum + score, 0) / scores.length)
-        : 0;
-
     scoreGrid.innerHTML =
-      createOverallScore(overallScore) +
       createScoreCard("Food Security", foodScore) +
       createScoreCard("Climate Resilience", climateScore) +
       createScoreCard("Water Sustainability", waterScore) +
       createScoreCard("Economic Impact", economicScore);
 
     results.innerHTML =
+      createRecommendationCard(
+        data.recommendation || "No recommendation returned.",
+        data.confidence || 0,
+        timelineAgents
+      ) +
+      createTimeline(timelineAgents) +
       createAgentCard("Planner Agent", agents.planner_agent || "No response.") +
       createAgentCard("Water Agent", agents.water_agent || "No response.") +
       createAgentCard("Risk Agent", agents.risk_agent || "No response.") +
-      createAgentCard("Global Impact Agent", impact || "No response.");
+      createAgentCard("Global Impact Agent", agents.global_impact_agent || "No response.") +
+      createSafetyNote(data.safety_note || "AI-assisted guidance only. Confirm major decisions with local experts.");
 
     status.textContent = "Analysis Complete";
   } catch (error) {
