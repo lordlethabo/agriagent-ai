@@ -1,53 +1,22 @@
-# ==========================================
-# AgriAgent Global - Specialist Agents
-# ==========================================
-
-
 def safe_output(response):
-    """
-    Safely extract visible text from Azure OpenAI Responses API.
-    """
-
     if getattr(response, "output_text", None):
         return response.output_text.strip()
 
-    try:
-        outputs = []
+    text_parts = []
 
-        for item in response.output:
+    for item in getattr(response, "output", []) or []:
+        for content in getattr(item, "content", []) or []:
+            text = getattr(content, "text", None)
+            if text:
+                text_parts.append(text)
 
-            if hasattr(item, "content"):
-
-                for content in item.content:
-
-                    if hasattr(content, "text"):
-                        outputs.append(content.text)
-
-                    elif isinstance(content, dict):
-
-                        if content.get("text"):
-                            outputs.append(content["text"])
-
-        if outputs:
-            return "\n".join(outputs).strip()
-
-    except Exception:
-        pass
+    if text_parts:
+        return "\n".join(text_parts).strip()
 
     return "Agent completed but returned no visible text."
 
 
-def call_agent(
-    client,
-    deployment,
-    agent_name,
-    farmer_data,
-    task
-):
-    """
-    Generic specialist agent function.
-    """
-
+def call_agent(client, deployment, agent_name, farmer_data, task):
     response = client.responses.create(
         model=deployment,
         input=f"""
@@ -62,98 +31,48 @@ Task:
 Rules:
 - Return exactly 3 bullet points.
 - Maximum 20 words per bullet.
-- Do not explain reasoning.
 - Return only the final answer.
-- Focus on practical action.
-- Focus on food security, climate resilience, water sustainability, and income generation.
+- Be practical.
+- Focus on food security, climate resilience, water sustainability, and income.
 """,
         max_output_tokens=1200,
-        text={
-            "verbosity": "low"
-        }
+        text={"verbosity": "low"}
     )
 
     return safe_output(response)
 
 
-# ==========================================
-# Planner Agent
-# ==========================================
-def planner_agent(
-    client,
-    deployment,
-    farmer_data
-):
+def planner_agent(client, deployment, farmer_data):
     return call_agent(
         client,
         deployment,
         "Planner Agent",
         farmer_data,
-        """
-Create:
-- Farm layout
-- Production strategy
-- Scaling strategy
-"""
+        "Create farm layout, production strategy, and scaling plan."
     )
 
 
-# ==========================================
-# Water Agent
-# ==========================================
-def water_agent(
-    client,
-    deployment,
-    farmer_data
-):
+def water_agent(client, deployment, farmer_data):
     return call_agent(
         client,
         deployment,
         "Water Agent",
         farmer_data,
-        """
-Recommend:
-- Irrigation strategy
-- Water storage
-- Water conservation
-"""
+        "Recommend irrigation, storage, and water conservation actions."
     )
 
 
-# ==========================================
-# Risk Agent
-# ==========================================
-def risk_agent(
-    client,
-    deployment,
-    farmer_data
-):
+def risk_agent(client, deployment, farmer_data):
     return call_agent(
         client,
         deployment,
         "Risk Agent",
         farmer_data,
-        """
-Identify:
-- Climate risks
-- Pest risks
-- Financial risks
-- Market risks
-
-Provide mitigation actions.
-"""
+        "Identify climate, pest, financial, market, and operational risks with mitigation actions."
     )
 
 
-# ==========================================
-# Global Impact Agent
-# ==========================================
-def global_impact_agent(
-    client,
-    deployment,
-    farmer_data
-):
-
+def global_impact_agent(client, deployment, farmer_data):
     response = client.responses.create(
         model=deployment,
         input=f"""
@@ -162,7 +81,7 @@ You are Global Impact Agent.
 Farmer Data:
 {farmer_data}
 
-Return:
+Return this exact format:
 
 Food Security Score: X/100
 Climate Resilience Score: X/100
@@ -177,15 +96,12 @@ SDG Alignment:
 - SDG 13: Climate Action
 
 Rules:
-- Keep responses concise.
 - One sentence explanation per score.
-- Focus on measurable impact.
-- Do not explain reasoning.
+- Keep it concise.
+- Return only final answer.
 """,
         max_output_tokens=1500,
-        text={
-            "verbosity": "low"
-        }
+        text={"verbosity": "low"}
     )
 
     return safe_output(response)
