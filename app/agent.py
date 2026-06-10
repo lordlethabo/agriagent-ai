@@ -12,9 +12,8 @@ from app.agents import (
 
 
 SAFETY_NOTE = (
-    "AgriAgent provides AI-assisted farming guidance, not professional "
-    "agricultural advice. Farmers should confirm major decisions with local "
-    "extension officers or agricultural experts where possible."
+    "AgriAgent provides AI-assisted farming guidance, not professional agricultural advice. "
+    "Farmers should confirm major decisions with local extension officers or agricultural experts where possible."
 )
 
 
@@ -47,13 +46,13 @@ Main Challenge: {data.challenge}
 
 def fallback_response():
     return {
-        "recommendation": "Use general advisory mode while confirming details with local agricultural experts.",
+        "recommendation": "Use general advisory mode and verify recommendations with local agricultural experts.",
         "confidence": 55,
         "agents": [
             {
                 "name": "Fallback Agent",
                 "status": "warning",
-                "finding": "Some AI or data sources are temporarily unavailable."
+                "finding": "Some AI services or data sources were unavailable."
             }
         ],
         "agent_results": {
@@ -83,45 +82,39 @@ def run_all_agents(data: FarmInput):
         risk = risk_agent(client, deployment, farmer_data)
         impact = global_impact_agent(client, deployment, farmer_data)
 
-        recommendation = (
-            "Develop a climate-smart farming plan focused on water efficiency, "
-            "risk reduction, food security, and local economic opportunity."
-        )
-
-        confidence = 87
-
-        agents = [
-            {
-                "name": "Planner Agent",
-                "status": "complete",
-                "finding": "Farm strategy and production structure generated."
-            },
-            {
-                "name": "Water Agent",
-                "status": "complete",
-                "finding": "Water conservation and irrigation actions identified."
-            },
-            {
-                "name": "Risk Agent",
-                "status": "complete",
-                "finding": "Climate, pest, financial, and market risks assessed."
-            },
-            {
-                "name": "Global Impact Agent",
-                "status": "complete",
-                "finding": "Food security, climate, water, and economic impact scored."
-            },
-            {
-                "name": "Coordinator Agent",
-                "status": "complete",
-                "finding": "Specialist outputs combined into a final advisory package."
-            }
-        ]
-
         return {
-            "recommendation": recommendation,
-            "confidence": confidence,
-            "agents": agents,
+            "recommendation": (
+                "Develop a climate-smart farming plan focused on water efficiency, "
+                "risk reduction, food security, and local economic opportunity."
+            ),
+            "confidence": 87,
+            "agents": [
+                {
+                    "name": "Planner Agent",
+                    "status": "complete",
+                    "finding": "Farm strategy and production structure generated."
+                },
+                {
+                    "name": "Water Agent",
+                    "status": "complete",
+                    "finding": "Water conservation and irrigation actions identified."
+                },
+                {
+                    "name": "Risk Agent",
+                    "status": "complete",
+                    "finding": "Climate, pest, financial, and market risks assessed."
+                },
+                {
+                    "name": "Global Impact Agent",
+                    "status": "complete",
+                    "finding": "Food security, climate, water, and economic impact scored."
+                },
+                {
+                    "name": "Coordinator Agent",
+                    "status": "complete",
+                    "finding": "Specialist outputs combined into a final advisory package."
+                }
+            ],
             "agent_results": {
                 "planner_agent": planner,
                 "water_agent": water,
@@ -141,5 +134,4 @@ def run_all_agents(data: FarmInput):
 
 
 def generate_farm_analysis(data: FarmInput):
-    results = run_all_agents(data)
-    return results
+    return run_all_agents(data)
