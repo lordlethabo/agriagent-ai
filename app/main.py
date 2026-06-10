@@ -9,7 +9,7 @@ from app.agent import generate_farm_analysis, run_all_agents
 app = FastAPI(
     title="AgriAgent Global",
     description="Multi-agent climate and food security intelligence platform",
-    version="2.0.0"
+    version="2.1.0"
 )
 
 
@@ -44,7 +44,7 @@ def health_check():
 
 @app.post("/analyze")
 def analyze_farm(data: FarmInput):
-    ai_plan = generate_farm_analysis(data)
+    result = generate_farm_analysis(data)
 
     return {
         "farmer_profile": {
@@ -53,15 +53,14 @@ def analyze_farm(data: FarmInput):
             "farm_size": data.farm_size,
             "challenge": data.challenge
         },
-        "ai_farming_plan": ai_plan,
-        "model_used": os.getenv("AZURE_OPENAI_DEPLOYMENT"),
-        "status": "AI farm analysis completed successfully"
+        **result,
+        "model_used": os.getenv("AZURE_OPENAI_DEPLOYMENT")
     }
 
 
 @app.post("/multi-agent-analysis")
 def multi_agent_analysis(data: FarmInput):
-    results = run_all_agents(data)
+    result = run_all_agents(data)
 
     return {
         "farmer_profile": {
@@ -70,8 +69,6 @@ def multi_agent_analysis(data: FarmInput):
             "farm_size": data.farm_size,
             "challenge": data.challenge
         },
-        "agent_results": results["agent_results"],
-        "global_challenge_positioning": results["global_challenge_positioning"],
-        "model_used": os.getenv("AZURE_OPENAI_DEPLOYMENT"),
-        "status": results["status"]
+        **result,
+        "model_used": os.getenv("AZURE_OPENAI_DEPLOYMENT")
     }
