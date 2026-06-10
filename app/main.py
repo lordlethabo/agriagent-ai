@@ -9,7 +9,7 @@ from app.agent import generate_farm_analysis, run_all_agents
 app = FastAPI(
     title="AgriAgent Global",
     description="Multi-agent climate and food security intelligence platform",
-    version="2.1.0"
+    version="3.0.0"
 )
 
 
