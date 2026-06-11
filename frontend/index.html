@@ -1,171 +1,237 @@
-const API_URL =
-  "https://fluffy-doodle-x54vgjjjj5wr3pg66-8000.app.github.dev/multi-agent-analysis";
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AgriAgent Global</title>
 
-const menuBtn = document.getElementById("menuBtn");
-const mobileMenu = document.getElementById("mobileMenu");
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="style.css" />
+</head>
 
-if (menuBtn) {
-  menuBtn.addEventListener("click", () => {
-    mobileMenu.classList.toggle("hidden");
-  });
-}
+<body class="bg-[#f7f8f3] text-slate-950 overflow-x-hidden">
 
-function getScore(text, label) {
-  const match = text.match(new RegExp(`${label}:\\s*(\\d+)`, "i"));
-  return match ? parseInt(match[1]) : 0;
-}
+<header class="fixed left-0 right-0 top-0 z-50 border-b border-white/30 bg-white/80 backdrop-blur-2xl">
+  <nav class="mx-auto flex max-w-7xl items-center justify-between px-5 py-4 lg:px-8">
 
-function createScoreCard(title, score) {
-  return `
-    <div class="score-card">
-      <p>${title}</p>
-      <strong>${score}/100</strong>
-      <div class="progress-track">
-        <div class="progress-fill" style="width:${score}%"></div>
+    <a href="#top" class="flex items-center gap-3">
+      <div class="brand-mark">A</div>
+
+      <div>
+        <p class="text-base font-black tracking-tight">
+          AgriAgent Global
+        </p>
+
+        <p class="text-xs text-slate-500">
+          Climate & Food Security Intelligence
+        </p>
       </div>
+    </a>
+
+    <button
+      id="menuBtn"
+      class="mobile-menu-button md:hidden"
+      aria-label="Open menu"
+    >
+      <span></span>
+      <span></span>
+    </button>
+
+    <div class="hidden items-center gap-8 text-sm font-semibold text-slate-700 md:flex">
+      <a href="#problem" class="nav-link">Problem</a>
+      <a href="#agents" class="nav-link">Agents</a>
+      <a href="#demo" class="nav-link">Demo</a>
+      <a href="#impact" class="nav-link">Impact</a>
+
+      <a
+        href="#demo"
+        class="rounded-full bg-slate-950 px-5 py-3 text-white transition hover:bg-emerald-700"
+      >
+        Launch Analysis
+      </a>
     </div>
-  `;
-}
+  </nav>
 
-function createRecommendationCard(recommendation, confidence, agents) {
-  const reasons = agents.map(agent => `<li>${agent.finding}</li>`).join("");
-
-  return `
-    <div class="recommendation-card">
-      <h3>Recommendation</h3>
-      <p><strong>Best action:</strong> ${recommendation}</p>
-      <p><strong>Confidence:</strong> ${confidence}%</p>
-
-      <h4>Why this recommendation?</h4>
-      <ul>${reasons}</ul>
+  <div
+    id="mobileMenu"
+    class="hidden border-t border-slate-200 bg-white px-5 py-4 md:hidden"
+  >
+    <div class="flex flex-col gap-3 text-sm font-semibold">
+      <a href="#problem" class="mobile-link">Problem</a>
+      <a href="#agents" class="mobile-link">Agents</a>
+      <a href="#demo" class="mobile-link">Demo</a>
+      <a href="#impact" class="mobile-link">Impact</a>
     </div>
-  `;
-}
+  </div>
+</header>
 
-function createTimeline(agents) {
-  return `
-    <div class="agent-card">
-      <h3>Agent Reasoning Timeline</h3>
-      <div class="timeline">
-        ${agents.map(agent => `
-          <div class="timeline-step">
-            <strong>${agent.name}</strong>
-            <span>${agent.status}</span>
-            <p>${agent.finding}</p>
+<main id="top">
+
+  <section class="hero">
+
+    <div class="hero-overlay"></div>
+
+    <div class="hero-content">
+
+      <div class="hero-badge">
+        Microsoft Agents League • Reasoning Agents Track
+      </div>
+
+      <h1>
+        Multi-Agent AI For Global Food Security
+      </h1>
+
+      <p>
+        AgriAgent Global helps farmers, NGOs, governments, and cooperatives
+        make climate-smart agricultural decisions using specialized AI agents.
+      </p>
+
+      <div class="hero-buttons">
+        <a href="#demo" class="btn-primary">
+          Launch Analysis
+        </a>
+
+        <a href="#agents" class="btn-secondary">
+          Explore Agents
+        </a>
+      </div>
+
+      <div class="hero-stats">
+
+        <div class="stat-card">
+          <h3>4</h3>
+          <span>AI Agents</span>
+        </div>
+
+        <div class="stat-card">
+          <h3>6</h3>
+          <span>Global Regions</span>
+        </div>
+
+        <div class="stat-card">
+          <h3>5</h3>
+          <span>SDGs</span>
+        </div>
+
+        <div class="stat-card">
+          <h3>100+</h3>
+          <span>Use Cases</span>
+        </div>
+
+      </div>
+
+    </div>
+
+  </section>
+
+  <section id="demo" class="mx-auto max-w-7xl px-5 py-16 lg:px-8">
+
+    <div class="mb-8 max-w-3xl">
+
+      <p class="section-label">
+        Live Demo
+      </p>
+
+      <h2 class="mt-3 text-3xl font-black tracking-tight sm:text-5xl">
+        Analyze a Farming Challenge
+      </h2>
+
+    </div>
+
+    <div class="grid gap-8 lg:grid-cols-[420px_1fr]">
+
+      <aside class="rounded-[2rem] border border-white/70 bg-white/90 p-6 shadow-xl backdrop-blur-xl">
+
+        <h3 class="text-2xl font-black">
+          Farm Profile
+        </h3>
+
+        <p class="mt-2 text-sm text-slate-500">
+          Enter your farming information.
+        </p>
+
+        <div class="mt-6 flex flex-col gap-4">
+
+          <input
+            id="location"
+            class="input"
+            placeholder="Location"
+            value="Pretoria, South Africa"
+          />
+
+          <input
+            id="goal"
+            class="input"
+            placeholder="Farming Goal"
+            value="Increase maize production"
+          />
+
+          <input
+            id="size"
+            class="input"
+            placeholder="Farm Size"
+            value="10 hectares"
+          />
+
+          <textarea
+            id="challenge"
+            class="input min-h-[120px]"
+            placeholder="Main Challenge"
+          >Recurring drought</textarea>
+
+          <button
+            onclick="analyzeFarm()"
+            class="primary-button w-full"
+          >
+            Run Multi-Agent Analysis
+          </button>
+
+        </div>
+
+      </aside>
+
+      <section
+        id="dashboard"
+        class="rounded-[2rem] border border-white/70 bg-white/80 p-6 shadow-xl backdrop-blur-xl"
+      >
+
+        <div class="flex flex-col gap-3 border-b border-slate-200 pb-5 md:flex-row md:items-center md:justify-between">
+
+          <div>
+            <h3 class="text-2xl font-black">
+              Agent Dashboard
+            </h3>
+
+            <p class="text-sm text-slate-500">
+              Structured outputs and impact scores.
+            </p>
           </div>
-        `).join("")}
-      </div>
+
+          <span id="status" class="status-pill">
+            Ready
+          </span>
+
+        </div>
+
+        <div
+          id="scoreGrid"
+          class="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4"
+        ></div>
+
+        <div
+          id="results"
+          class="mt-6 grid gap-5"
+        ></div>
+
+      </section>
+
     </div>
-  `;
-}
 
-function createAgentCard(title, content) {
-  return `
-    <div class="agent-card">
-      <h3>${title}</h3>
-      <pre>${content || "No result returned."}</pre>
-    </div>
-  `;
-}
+  </section>
 
-function createSafetyNote(note) {
-  return `
-    <div class="safety-note">
-      ${note}
-    </div>
-  `;
-}
+</main>
 
-function showLoading() {
-  document.getElementById("results").innerHTML = `
-    <div class="agent-card">
-      <h3>Running Multi-Agent Analysis</h3>
-      <pre>Planner Agent is evaluating strategy...
-Water Agent is evaluating sustainability...
-Risk Agent is evaluating threats...
-Global Impact Agent is calculating impact scores...
-Coordinator Agent is preparing the final recommendation.</pre>
-    </div>
-  `;
-}
+<script src="app.js"></script>
 
-function showError(message) {
-  document.getElementById("results").innerHTML = `
-    <div class="agent-card">
-      <h3>Analysis Failed</h3>
-      <pre>${message}</pre>
-    </div>
-  `;
-}
-
-async function analyzeFarm() {
-  const status = document.getElementById("status");
-  const scoreGrid = document.getElementById("scoreGrid");
-
-  status.textContent = "Running Analysis";
-  scoreGrid.innerHTML = "";
-  showLoading();
-
-  const payload = {
-    location: document.getElementById("location").value,
-    farming_goal: document.getElementById("goal").value,
-    farm_size: document.getElementById("size").value,
-    challenge: document.getElementById("challenge").value
-  };
-
-  try {
-    const response = await fetch(API_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(payload)
-    });
-
-    if (!response.ok) {
-      throw new Error(`API returned status ${response.status}`);
-    }
-
-    const data = await response.json();
-
-    const agents = data.agent_results || {};
-    const timelineAgents = data.agents || [];
-    const impact = agents.global_impact_agent || "";
-
-    const foodScore = getScore(impact, "Food Security Score");
-    const climateScore = getScore(impact, "Climate Resilience Score");
-    const waterScore = getScore(impact, "Water Sustainability Score");
-    const economicScore = getScore(impact, "Economic Impact Score");
-
-    scoreGrid.innerHTML =
-      createScoreCard("Food Security", foodScore) +
-      createScoreCard("Climate Resilience", climateScore) +
-      createScoreCard("Water Sustainability", waterScore) +
-      createScoreCard("Economic Impact", economicScore);
-
-    document.getElementById("results").innerHTML =
-      createRecommendationCard(
-        data.recommendation || "No recommendation returned.",
-        data.confidence || 0,
-        timelineAgents
-      ) +
-      createTimeline(timelineAgents) +
-      createAgentCard("Planner Agent", agents.planner_agent) +
-      createAgentCard("Water Agent", agents.water_agent) +
-      createAgentCard("Risk Agent", agents.risk_agent) +
-      createAgentCard("Global Impact Agent", agents.global_impact_agent) +
-      createSafetyNote(
-        data.safety_note ||
-        "AI-assisted guidance only. Confirm major decisions with local agricultural experts."
-      );
-
-    status.textContent = "Analysis Complete";
-  } catch (error) {
-    console.error(error);
-    status.textContent = "Error";
-
-    showError(
-      "Unable to connect to AgriAgent Global API. Verify that your FastAPI backend is running and accessible."
-    );
-  }
-}
+</body>
+</html>
