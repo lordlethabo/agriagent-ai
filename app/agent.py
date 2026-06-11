@@ -4,7 +4,6 @@ from fastapi import HTTPException
 from openai import AzureOpenAI
 
 from app.models import FarmInput
-from app.weather import get_weather_context
 from app.agents import (
     planner_agent,
     water_agent,
@@ -76,35 +75,73 @@ def get_client():
 def clean_text(value: str) -> str:
     if not value:
         return ""
-
     return re.sub(r"\s+", " ", value).strip()
+
+
+def infer_season_context(location: str) -> dict:
+    location_lower = clean_text(location).lower()
+
+    southern_keywords = [
+        "south africa", "limpopo", "gauteng", "pretoria", "johannesburg",
+        "botswana", "zimbabwe", "namibia", "mozambique",
+        "australia", "new zealand", "argentina", "chile", "brazil"
+    ]
+
+    tropical_keywords = [
+        "kenya", "nigeria", "ghana", "uganda", "tanzania", "ethiopia",
+        "india", "indonesia", "philippines", "thailand", "malaysia", "colombia"
+    ]
+
+    if any(keyword in location_lower for keyword in southern_keywords):
+        return {
+            "hemisphere": "Southern Hemisphere",
+            "current_season_estimate": "winter / dry-season period around June",
+            "seasonal_guidance": (
+                "Prioritize water storage, drought resilience, soil moisture conservation, "
+                "off-season planning, irrigation readiness, and preparation for summer rainfall planting."
+            )
+        }
+
+    if any(keyword in location_lower for keyword in tropical_keywords):
+        return {
+            "hemisphere": "Tropical or equatorial region",
+            "current_season_estimate": "local wet and dry seasons vary by region",
+            "seasonal_guidance": (
+                "Verify local rainy season timing, prioritize drainage during wet periods, "
+                "and use staggered planting to reduce rainfall uncertainty."
+            )
+        }
+
+    return {
+        "hemisphere": "Northern Hemisphere or unspecified region",
+        "current_season_estimate": "summer / growing-season period around June",
+        "seasonal_guidance": (
+            "Assess heat stress, irrigation demand, pest pressure, and crop water needs. "
+            "Use local planting calendars before acting."
+        )
+    }
 
 
 def validate_farm_input(data: FarmInput):
     errors = []
 
-    location = clean_text(data.location)
-    goal = clean_text(data.farming_goal)
-    farm_size = clean_text(data.farm_size)
-    challenge = clean_text(data.challenge)
-
-    required_fields = {
-        "location": location,
-        "farming_goal": goal,
-        "farm_size": farm_size,
-        "challenge": challenge,
+    fields = {
+        "location": clean_text(data.location),
+        "farming_goal": clean_text(data.farming_goal),
+        "farm_size": clean_text(data.farm_size),
+        "challenge": clean_text(data.challenge),
     }
 
-    for field, value in required_fields.items():
+    for field, value in fields.items():
         if not value:
             errors.append(f"{field} is required.")
         elif len(value) < 4:
             errors.append(f"{field} is too short.")
 
-    if goal.lower() in VAGUE_TERMS:
+    if fields["farming_goal"].lower() in VAGUE_TERMS:
         errors.append("farming_goal is too vague. Provide a specific farming objective.")
 
-    if challenge.lower() in VAGUE_TERMS:
+    if fields["challenge"].lower() in VAGUE_TERMS:
         errors.append("challenge is too vague. Describe the main farming problem clearly.")
 
     return errors
@@ -153,8 +190,8 @@ def build_safety_warning(risk_level: str):
     return "No major high-risk terms detected, but local verification is still recommended."
 
 
-def calculate_confidence(data: FarmInput, validation_errors: list, risk_info: dict, weather_context: dict):
-    confidence = 88
+def calculate_confidence(data: FarmInput, validation_errors: list, risk_info: dict):
+    confidence = 86
 
     fields = [
         clean_text(data.location),
@@ -165,115 +202,63 @@ def calculate_confidence(data: FarmInput, validation_errors: list, risk_info: di
 
     for field in fields:
         if len(field) < 10:
-            confidence -= 6
+            confidence -= 5
 
     if validation_errors:
         confidence -= 20
 
     if risk_info["risk_level"] == "Medium":
-        confidence -= 8
+        confidence -= 6
 
     if risk_info["risk_level"] == "High":
-        confidence -= 16
+        confidence -= 14
 
-    if weather_context.get("available"):
-        confidence += 5
-    else:
-        confidence -= 7
+    confidence -= 4
 
-    return max(45, min(confidence, 93))
+    return max(45, min(confidence, 90))
 
 
-def build_assumptions(weather_context: dict):
-    assumptions = [
+def build_assumptions(season_context: dict):
+    return [
         "Analysis is based on the farmer profile provided by the user.",
+        "Seasonal guidance is inferred from location and general regional climate patterns.",
+        f"Estimated seasonal context: {season_context['current_season_estimate']}.",
+        "No live weather, soil, satellite, or market-pricing data is currently connected.",
         "AI recommendations are advisory estimates, not guaranteed outcomes.",
-        "Local soil tests, water access, and market prices may change the recommendation.",
+        "Local soil tests, water access, planting calendars, and market prices may change the recommendation.",
     ]
-
-    if weather_context.get("available"):
-        assumptions.append("Weather context is grounded using WeatherAPI data.")
-    else:
-        assumptions.append("Weather data was unavailable, so the system used general advisory mode.")
-
-    return assumptions
 
 
 def build_local_verification_steps():
     return [
         "Confirm crop choices with a local agricultural extension officer.",
+        "Check the local planting calendar for the exact season and rainfall window.",
         "Run a soil test before major fertilizer or soil amendment decisions.",
         "Verify water availability, water quality, and irrigation feasibility locally.",
         "Check current local market prices and buyer demand before planting at scale.",
-        "Consult qualified experts before using chemical pesticides, drilling boreholes, or taking loans.",
+        "Consult qualified experts before chemical pesticide use, borehole drilling, or large loans.",
     ]
 
 
-def build_farmer_data(data: FarmInput, weather_context: dict) -> str:
+def build_farmer_data(data: FarmInput, season_context: dict) -> str:
     return f"""
 Location: {clean_text(data.location)}
 Farming Goal: {clean_text(data.farming_goal)}
 Farm Size: {clean_text(data.farm_size)}
 Main Challenge: {clean_text(data.challenge)}
 
-Weather Context:
-{weather_context.get("summary")}
-
-Weather Data Available:
-{weather_context.get("available")}
+Season and Location Context:
+Hemisphere / Region: {season_context["hemisphere"]}
+Estimated Season: {season_context["current_season_estimate"]}
+Seasonal Guidance: {season_context["seasonal_guidance"]}
 
 Safety and Grounding Rules:
-- Use the weather context when making water and climate recommendations.
-- Do not invent exact prices, laws, grants, yields, or guarantees.
-- If live data is unavailable, clearly state that local verification is required.
+- Use the season and location context when making climate, water, crop, and risk recommendations.
+- Do not invent exact weather, prices, laws, grants, yields, or guarantees.
+- If exact local data is unavailable, say local verification is required.
 - Avoid chemical, borehole drilling, legal, medical, or financial advice as certainty.
-- Recommend local extension officers, soil tests, and market verification for major decisions.
+- Recommend local extension officers, soil tests, planting calendars, and market verification for major decisions.
 """
-
-
-def fallback_response(data: FarmInput = None, weather_context: dict = None):
-    risk_info = (
-        detect_risk_level(data)
-        if data is not None
-        else {
-            "risk_level": "Medium",
-            "matched_risk_terms": [],
-            "safety_warning": "Some services are unavailable. Verify all major decisions locally."
-        }
-    )
-
-    if weather_context is None:
-        weather_context = {
-            "available": False,
-            "summary": "Weather data unavailable."
-        }
-
-    return {
-        "recommendation": "Use general advisory mode and verify recommendations with local agricultural experts.",
-        "confidence": 55,
-        "risk_level": risk_info["risk_level"],
-        "matched_risk_terms": risk_info["matched_risk_terms"],
-        "safety_warning": risk_info["safety_warning"],
-        "weather_context": weather_context,
-        "assumptions": build_assumptions(weather_context),
-        "local_verification_steps": build_local_verification_steps(),
-        "agents": [
-            {
-                "name": "Fallback Agent",
-                "status": "warning",
-                "finding": "Some AI services or data sources were unavailable."
-            }
-        ],
-        "agent_results": {
-            "fallback_agent": "General advisory mode activated because the full agent workflow could not complete."
-        },
-        "global_challenge_positioning": (
-            "AgriAgent Global supports food security, climate resilience, "
-            "water sustainability, and rural economic opportunity."
-        ),
-        "safety_note": SAFETY_NOTE,
-        "status": "Fallback advisory mode activated."
-    }
 
 
 def run_all_agents(data: FarmInput):
@@ -282,10 +267,10 @@ def run_all_agents(data: FarmInput):
     if not deployment:
         raise HTTPException(status_code=500, detail="AZURE_OPENAI_DEPLOYMENT is missing.")
 
-    weather_context = get_weather_context(data.location)
+    season_context = infer_season_context(data.location)
     validation_errors = validate_farm_input(data)
     risk_info = detect_risk_level(data)
-    confidence = calculate_confidence(data, validation_errors, risk_info, weather_context)
+    confidence = calculate_confidence(data, validation_errors, risk_info)
 
     if validation_errors:
         return {
@@ -294,9 +279,9 @@ def run_all_agents(data: FarmInput):
             "risk_level": risk_info["risk_level"],
             "matched_risk_terms": risk_info["matched_risk_terms"],
             "safety_warning": risk_info["safety_warning"],
-            "weather_context": weather_context,
+            "season_context": season_context,
             "validation_errors": validation_errors,
-            "assumptions": build_assumptions(weather_context),
+            "assumptions": build_assumptions(season_context),
             "local_verification_steps": build_local_verification_steps(),
             "agents": [
                 {
@@ -308,17 +293,13 @@ def run_all_agents(data: FarmInput):
             "agent_results": {
                 "validation_agent": "Input validation failed. Please provide more specific farm information."
             },
-            "global_challenge_positioning": (
-                "AgriAgent Global supports food security, climate resilience, "
-                "water sustainability, and rural economic opportunity."
-            ),
             "safety_note": SAFETY_NOTE,
             "status": "Input validation warning."
         }
 
     try:
         client = get_client()
-        farmer_data = build_farmer_data(data, weather_context)
+        farmer_data = build_farmer_data(data, season_context)
 
         planner = planner_agent(client, deployment, farmer_data)
         water = water_agent(client, deployment, farmer_data)
@@ -327,21 +308,24 @@ def run_all_agents(data: FarmInput):
 
         return {
             "recommendation": (
-                "Develop a weather-grounded climate-smart farming plan focused on water efficiency, "
+                "Develop a season-aware climate-smart farming plan focused on water efficiency, "
                 "risk reduction, food security, and local economic opportunity."
             ),
             "confidence": confidence,
             "risk_level": risk_info["risk_level"],
             "matched_risk_terms": risk_info["matched_risk_terms"],
             "safety_warning": risk_info["safety_warning"],
-            "weather_context": weather_context,
-            "assumptions": build_assumptions(weather_context),
+            "season_context": season_context,
+            "assumptions": build_assumptions(season_context),
             "local_verification_steps": build_local_verification_steps(),
             "agents": [
                 {
-                    "name": "Weather Data Agent",
-                    "status": "complete" if weather_context.get("available") else "warning",
-                    "finding": weather_context.get("summary")
+                    "name": "Season and Location Agent",
+                    "status": "complete",
+                    "finding": (
+                        f"{season_context['hemisphere']} detected. "
+                        f"{season_context['current_season_estimate']}."
+                    )
                 },
                 {
                     "name": "Input Validation Agent",
@@ -361,7 +345,7 @@ def run_all_agents(data: FarmInput):
                 {
                     "name": "Water Agent",
                     "status": "complete",
-                    "finding": "Weather-grounded water conservation and irrigation actions identified."
+                    "finding": "Season-aware water conservation and irrigation actions identified."
                 },
                 {
                     "name": "Risk Agent",
@@ -390,11 +374,32 @@ def run_all_agents(data: FarmInput):
                 "water sustainability, and rural economic opportunity."
             ),
             "safety_note": SAFETY_NOTE,
-            "status": "Weather-grounded global impact multi-agent analysis completed successfully."
+            "status": "Season-aware global impact multi-agent analysis completed successfully."
         }
 
     except Exception:
-        return fallback_response(data, weather_context)
+        return {
+            "recommendation": "Use general advisory mode and verify recommendations with local agricultural experts.",
+            "confidence": 55,
+            "risk_level": risk_info["risk_level"],
+            "matched_risk_terms": risk_info["matched_risk_terms"],
+            "safety_warning": risk_info["safety_warning"],
+            "season_context": season_context,
+            "assumptions": build_assumptions(season_context),
+            "local_verification_steps": build_local_verification_steps(),
+            "agents": [
+                {
+                    "name": "Fallback Agent",
+                    "status": "warning",
+                    "finding": "Some AI services were unavailable, so general advisory mode was used."
+                }
+            ],
+            "agent_results": {
+                "fallback_agent": "General advisory mode activated because the full agent workflow could not complete."
+            },
+            "safety_note": SAFETY_NOTE,
+            "status": "Fallback advisory mode activated."
+        }
 
 
 def generate_farm_analysis(data: FarmInput):
