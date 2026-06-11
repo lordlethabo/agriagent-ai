@@ -6,15 +6,23 @@ let latestAnalysis = null;
 const menuBtn = document.getElementById("menuBtn");
 const mobileMenu = document.getElementById("mobileMenu");
 
-if (menuBtn) {
+if (menuBtn && mobileMenu) {
   menuBtn.addEventListener("click", () => {
     mobileMenu.classList.toggle("hidden");
   });
 }
 
 function getScore(text, label) {
+  if (!text) return 0;
+
   const match = text.match(new RegExp(`${label}:\\s*(\\d+)`, "i"));
-  return match ? parseInt(match[1]) : 0;
+  return match ? parseInt(match[1], 10) : 0;
+}
+
+function getConfidenceLevel(score) {
+  if (score >= 80) return "High";
+  if (score >= 65) return "Medium";
+  return "Low";
 }
 
 function createScoreCard(title, score) {
@@ -39,34 +47,59 @@ function createConfidenceCard(title, value, note) {
   `;
 }
 
-function getConfidenceLevel(score) {
-  if (score >= 80) return "High";
-  if (score >= 65) return "Medium";
-  return "Low";
-}
-
 function createConfidenceGrid(data) {
   const overall = data.confidence || 0;
   const seasonLevel = data.season_context ? "High" : "Medium";
-  const safetyLevel = data.risk_level === "Low" ? "High" : data.risk_level === "Medium" ? "Medium" : "Low";
-  const dataLevel = "Medium";
+
+  const safetyLevel =
+    data.risk_level === "Low"
+      ? "High"
+      : data.risk_level === "Medium"
+      ? "Medium"
+      : "Low";
 
   return (
-    createConfidenceCard("Overall Confidence", `${overall}%`, getConfidenceLevel(overall)) +
-    createConfidenceCard("Season Context", seasonLevel, "Location-aware estimate") +
-    createConfidenceCard("Safety Confidence", safetyLevel, `Risk level: ${data.risk_level || "Unknown"}`) +
-    createConfidenceCard("Data Grounding", dataLevel, "AI + local verification")
+    createConfidenceCard(
+      "Overall Confidence",
+      `${overall}%`,
+      getConfidenceLevel(overall)
+    ) +
+    createConfidenceCard(
+      "Season Context",
+      seasonLevel,
+      "Location-aware estimate"
+    ) +
+    createConfidenceCard(
+      "Safety Confidence",
+      safetyLevel,
+      `Risk level: ${data.risk_level || "Unknown"}`
+    ) +
+    createConfidenceCard(
+      "Data Grounding",
+      "Medium",
+      "AI + local verification"
+    )
   );
 }
 
 function createRecommendationCard(recommendation, confidence, agents) {
-  const reasons = agents.map(agent => `<li>${agent.finding}</li>`).join("");
+  const reasons = (agents || [])
+    .map(agent => `<li>${agent.finding}</li>`)
+    .join("");
 
   return `
     <div class="recommendation-card">
       <h3>Executive Recommendation</h3>
-      <p><strong>Best action:</strong> ${recommendation}</p>
-      <p><strong>Confidence:</strong> ${confidence}%</p>
+
+      <p>
+        <strong>Best action:</strong>
+        ${recommendation || "No recommendation returned."}
+      </p>
+
+      <p>
+        <strong>Confidence:</strong>
+        ${confidence || 0}%
+      </p>
 
       <h4>Why this recommendation?</h4>
       <ul>${reasons}</ul>
@@ -78,14 +111,22 @@ function createTimeline(agents) {
   return `
     <div class="agent-card">
       <h3>Agent Execution Timeline</h3>
+
       <div class="timeline">
-        ${agents.map((agent, index) => `
-          <div class="timeline-step timeline-animated" style="animation-delay:${index * 0.12}s">
-            <strong>${agent.name}</strong>
-            <span>${agent.status}</span>
-            <p>${agent.finding}</p>
-          </div>
-        `).join("")}
+        ${(agents || [])
+          .map(
+            (agent, index) => `
+              <div
+                class="timeline-step timeline-animated"
+                style="animation-delay:${index * 0.12}s"
+              >
+                <strong>${agent.name}</strong>
+                <span>${agent.status}</span>
+                <p>${agent.finding}</p>
+              </div>
+            `
+          )
+          .join("")}
       </div>
     </div>
   `;
@@ -97,6 +138,7 @@ function createSeasonCard(seasonContext) {
   return `
     <div class="agent-card">
       <h3>Season & Location Intelligence</h3>
+
       <pre>Region: ${seasonContext.hemisphere || "Unknown"}
 Estimated season: ${seasonContext.current_season_estimate || "Unknown"}
 
@@ -109,6 +151,7 @@ function createRiskCard(data) {
   return `
     <div class="agent-card">
       <h3>Reliability & Safety Check</h3>
+
       <pre>Risk level: ${data.risk_level || "Unknown"}
 
 Safety warning:
@@ -123,6 +166,7 @@ function createListCard(title, items) {
   return `
     <div class="agent-card">
       <h3>${title}</h3>
+
       <ul class="clean-list">
         ${items.map(item => `<li>${item}</li>`).join("")}
       </ul>
@@ -142,7 +186,7 @@ function createAgentCard(title, content) {
 function createSafetyNote(note) {
   return `
     <div class="safety-note">
-      ${note}
+      ${note || "AI-assisted guidance only. Confirm major decisions with local agricultural experts."}
     </div>
   `;
 }
@@ -157,14 +201,49 @@ function showLoading() {
   document.getElementById("results").innerHTML = `
     <div class="agent-card">
       <h3>Running Multi-Agent Analysis</h3>
+
       <div class="timeline">
-        <div class="timeline-step timeline-animated"><strong>Season and Location Agent</strong><span>running</span><p>Inferring regional season and climate context.</p></div>
-        <div class="timeline-step timeline-animated" style="animation-delay:0.12s"><strong>Input Validation Agent</strong><span>running</span><p>Checking farm profile quality.</p></div>
-        <div class="timeline-step timeline-animated" style="animation-delay:0.24s"><strong>Safety Agent</strong><span>running</span><p>Evaluating risky farming decisions.</p></div>
-        <div class="timeline-step timeline-animated" style="animation-delay:0.36s"><strong>Planner Agent</strong><span>running</span><p>Creating farm strategy.</p></div>
-        <div class="timeline-step timeline-animated" style="animation-delay:0.48s"><strong>Water Agent</strong><span>running</span><p>Designing water resilience actions.</p></div>
-        <div class="timeline-step timeline-animated" style="animation-delay:0.60s"><strong>Risk Agent</strong><span>running</span><p>Assessing climate, pest, and market risks.</p></div>
-        <div class="timeline-step timeline-animated" style="animation-delay:0.72s"><strong>Global Impact Agent</strong><span>running</span><p>Calculating impact scores.</p></div>
+        <div class="timeline-step timeline-animated">
+          <strong>Season and Location Agent</strong>
+          <span>running</span>
+          <p>Inferring regional season and climate context.</p>
+        </div>
+
+        <div class="timeline-step timeline-animated" style="animation-delay:0.12s">
+          <strong>Input Validation Agent</strong>
+          <span>running</span>
+          <p>Checking farm profile quality.</p>
+        </div>
+
+        <div class="timeline-step timeline-animated" style="animation-delay:0.24s">
+          <strong>Safety Agent</strong>
+          <span>running</span>
+          <p>Evaluating risky farming decisions.</p>
+        </div>
+
+        <div class="timeline-step timeline-animated" style="animation-delay:0.36s">
+          <strong>Planner Agent</strong>
+          <span>running</span>
+          <p>Creating farm strategy.</p>
+        </div>
+
+        <div class="timeline-step timeline-animated" style="animation-delay:0.48s">
+          <strong>Water Agent</strong>
+          <span>running</span>
+          <p>Designing water resilience actions.</p>
+        </div>
+
+        <div class="timeline-step timeline-animated" style="animation-delay:0.60s">
+          <strong>Risk Agent</strong>
+          <span>running</span>
+          <p>Assessing climate, pest, and market risks.</p>
+        </div>
+
+        <div class="timeline-step timeline-animated" style="animation-delay:0.72s">
+          <strong>Global Impact Agent</strong>
+          <span>running</span>
+          <p>Calculating impact scores.</p>
+        </div>
       </div>
     </div>
   `;
@@ -187,6 +266,7 @@ async function analyzeFarm() {
 
   status.textContent = "Running Analysis";
   scoreGrid.innerHTML = "";
+
   if (confidenceGrid) confidenceGrid.innerHTML = "";
   if (pdfActions) pdfActions.classList.add("hidden");
 
@@ -236,8 +316,8 @@ async function analyzeFarm() {
 
     document.getElementById("results").innerHTML =
       createRecommendationCard(
-        data.recommendation || "No recommendation returned.",
-        data.confidence || 0,
+        data.recommendation,
+        data.confidence,
         timelineAgents
       ) +
       createSeasonCard(data.season_context) +
@@ -249,18 +329,15 @@ async function analyzeFarm() {
       createAgentCard("Global Impact Agent", agents.global_impact_agent) +
       createListCard("Assumptions", data.assumptions) +
       createListCard("Local Verification Steps", data.local_verification_steps) +
-      createSafetyNote(
-        data.safety_note ||
-        "AI-assisted guidance only. Confirm major decisions with local agricultural experts."
-      );
+      createSafetyNote(data.safety_note);
 
     if (pdfActions) pdfActions.classList.remove("hidden");
 
     status.textContent = "Analysis Complete";
   } catch (error) {
     console.error(error);
-    status.textContent = "Error";
     latestAnalysis = null;
+    status.textContent = "Error";
 
     if (pdfActions) pdfActions.classList.add("hidden");
 
@@ -384,7 +461,9 @@ Guidance: ${latestAnalysis.season_context?.seasonal_guidance}`,
   y = addSection(
     doc,
     "Local Verification Steps",
-    (latestAnalysis.local_verification_steps || []).map(item => `- ${item}`).join("\n"),
+    (latestAnalysis.local_verification_steps || [])
+      .map(item => `- ${item}`)
+      .join("\n"),
     y
   );
 
