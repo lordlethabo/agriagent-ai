@@ -59,26 +59,10 @@ function createConfidenceGrid(data) {
       : "Low";
 
   return (
-    createConfidenceCard(
-      "Overall Confidence",
-      `${overall}%`,
-      getConfidenceLevel(overall)
-    ) +
-    createConfidenceCard(
-      "Season Context",
-      seasonLevel,
-      "Location-aware estimate"
-    ) +
-    createConfidenceCard(
-      "Safety Confidence",
-      safetyLevel,
-      `Risk level: ${data.risk_level || "Unknown"}`
-    ) +
-    createConfidenceCard(
-      "Data Grounding",
-      "Medium",
-      "AI + local verification"
-    )
+    createConfidenceCard("Overall Confidence", `${overall}%`, getConfidenceLevel(overall)) +
+    createConfidenceCard("Season Context", seasonLevel, "Location-aware estimate") +
+    createConfidenceCard("Safety Confidence", safetyLevel, `Risk level: ${data.risk_level || "Unknown"}`) +
+    createConfidenceCard("Data Grounding", "Medium", "AI + local verification")
   );
 }
 
@@ -91,15 +75,8 @@ function createRecommendationCard(recommendation, confidence, agents) {
     <div class="recommendation-card">
       <h3>Executive Recommendation</h3>
 
-      <p>
-        <strong>Best action:</strong>
-        ${recommendation || "No recommendation returned."}
-      </p>
-
-      <p>
-        <strong>Confidence:</strong>
-        ${confidence || 0}%
-      </p>
+      <p><strong>Best action:</strong> ${recommendation || "No recommendation returned."}</p>
+      <p><strong>Confidence:</strong> ${confidence || 0}%</p>
 
       <h4>Why this recommendation?</h4>
       <ul>${reasons}</ul>
@@ -116,10 +93,7 @@ function createTimeline(agents) {
         ${(agents || [])
           .map(
             (agent, index) => `
-              <div
-                class="timeline-step timeline-animated"
-                style="animation-delay:${index * 0.12}s"
-              >
+              <div class="timeline-step timeline-animated" style="animation-delay:${index * 0.12}s">
                 <strong>${agent.name}</strong>
                 <span>${agent.status}</span>
                 <p>${agent.finding}</p>
@@ -186,7 +160,7 @@ function createAgentCard(title, content) {
 function createSafetyNote(note) {
   return `
     <div class="safety-note">
-      ${note || "AI-assisted guidance only. Confirm major decisions with local agricultural experts."}
+      ${note || "AgriAgent provides AI-assisted guidance only. Confirm major farming decisions with local experts."}
     </div>
   `;
 }
@@ -266,7 +240,6 @@ async function analyzeFarm() {
 
   status.textContent = "Running Analysis";
   scoreGrid.innerHTML = "";
-
   if (confidenceGrid) confidenceGrid.innerHTML = "";
   if (pdfActions) pdfActions.classList.add("hidden");
 
@@ -315,11 +288,7 @@ async function analyzeFarm() {
     }
 
     document.getElementById("results").innerHTML =
-      createRecommendationCard(
-        data.recommendation,
-        data.confidence,
-        timelineAgents
-      ) +
+      createRecommendationCard(data.recommendation, data.confidence, timelineAgents) +
       createSeasonCard(data.season_context) +
       createRiskCard(data) +
       createTimeline(timelineAgents) +
