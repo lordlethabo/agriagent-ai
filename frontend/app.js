@@ -1,5 +1,5 @@
 const API_URL =
-  "https://fluffy-doodle-x54vgjjjj5wr3pg66-8000.app.github.dev/multi-agent-analysis";
+  "https://agriagent-ai-jxld.onrender.com/multi-agent-analysis";
 
 let latestAnalysis = null;
 
