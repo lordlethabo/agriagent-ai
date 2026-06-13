@@ -57,25 +57,45 @@
     <div class="hero-overlay"></div>
 
     <div class="hero-content">
-      <div class="hero-badge">Microsoft Agents League • Reasoning Agents Track</div>
+      <div class="hero-badge">
+        Microsoft Agents League • Reasoning Agents Track
+      </div>
 
-      <h1>Multi-Agent AI For Global Food Security</h1>
+      <h1>
+        Multi-Agent AI For Global Food Security
+      </h1>
 
       <p>
         AgriAgent Global helps farmers, NGOs, governments, and cooperatives make
-        climate-smart agricultural decisions using specialized AI agents.
+        climate-smart agricultural decisions using specialized AI agents,
+        safety checks, seasonal intelligence, and impact scoring.
       </p>
 
       <div class="hero-buttons">
         <a href="#demo" class="btn-primary">Launch Analysis</a>
-        <a href="#agents" class="btn-secondary">Explore Agents</a>
+        <a href="#architecture" class="btn-secondary">View Architecture</a>
       </div>
 
       <div class="hero-stats">
-        <div class="stat-card"><h3>8</h3><span>Reasoning Steps</span></div>
-        <div class="stat-card"><h3>6</h3><span>Global Regions</span></div>
-        <div class="stat-card"><h3>5</h3><span>SDGs</span></div>
-        <div class="stat-card"><h3>100+</h3><span>Use Cases</span></div>
+        <div class="stat-card">
+          <h3>8</h3>
+          <span>Reasoning Steps</span>
+        </div>
+
+        <div class="stat-card">
+          <h3>6</h3>
+          <span>Global Regions</span>
+        </div>
+
+        <div class="stat-card">
+          <h3>5</h3>
+          <span>SDGs</span>
+        </div>
+
+        <div class="stat-card">
+          <h3>PDF</h3>
+          <span>Advisory Reports</span>
+        </div>
       </div>
     </div>
   </section>
@@ -92,22 +112,34 @@
       <div class="grid gap-4 sm:grid-cols-2">
         <div class="challenge-card">
           <h3>Food Security</h3>
-          <p>Smallholder and rural farming systems need better decision support to increase reliable production.</p>
+          <p>
+            Smallholder and rural farming systems need better decision support to
+            increase reliable production and reduce food insecurity.
+          </p>
         </div>
 
         <div class="challenge-card">
           <h3>Water Scarcity</h3>
-          <p>Drought and irregular rainfall require smarter irrigation, storage, and conservation planning.</p>
+          <p>
+            Drought and irregular rainfall require smarter irrigation, storage,
+            soil moisture protection, and conservation planning.
+          </p>
         </div>
 
         <div class="challenge-card">
           <h3>Climate Resilience</h3>
-          <p>Farmers need adaptive strategies for heat, pests, soil degradation, and seasonal uncertainty.</p>
+          <p>
+            Farmers need adaptive strategies for heat, pests, soil degradation,
+            uncertain rainfall, and seasonal shocks.
+          </p>
         </div>
 
         <div class="challenge-card">
           <h3>Economic Opportunity</h3>
-          <p>Agriculture can create jobs, local income, and investment-ready rural enterprises.</p>
+          <p>
+            Agriculture can create local jobs, market access, rural income, and
+            investment-ready farming enterprises.
+          </p>
         </div>
       </div>
     </div>
@@ -120,29 +152,74 @@
         Specialist agents working as one decision system.
       </h2>
       <p class="mt-4 text-slate-600">
-        Each agent analyzes a different dimension of the agricultural challenge and returns decision-ready recommendations.
+        AgriAgent combines validation, seasonal reasoning, safety screening,
+        planning, water intelligence, risk analysis, and global impact scoring.
       </p>
     </div>
 
     <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
       <div class="feature-card">
+        <h3>Season & Location Agent</h3>
+        <p>
+          Detects regional context and seasonal planning constraints from the
+          farmer's location.
+        </p>
+      </div>
+
+      <div class="feature-card">
+        <h3>Safety Agent</h3>
+        <p>
+          Flags risky financial, chemical, water, legal, and disease-related
+          recommendations.
+        </p>
+      </div>
+
+      <div class="feature-card">
         <h3>Planner Agent</h3>
-        <p>Creates farm layout, production strategy, and scale-up roadmap.</p>
+        <p>
+          Creates farm layout, production strategy, crop planning, and scale-up
+          roadmap.
+        </p>
       </div>
 
       <div class="feature-card">
         <h3>Water Agent</h3>
-        <p>Recommends irrigation, storage, and conservation actions.</p>
+        <p>
+          Recommends irrigation, storage, soil moisture protection, and drought
+          resilience actions.
+        </p>
       </div>
 
       <div class="feature-card">
         <h3>Risk Agent</h3>
-        <p>Identifies drought, pest, financial, operational, and market risks.</p>
+        <p>
+          Identifies climate, pest, financial, operational, and market risks with
+          mitigation actions.
+        </p>
       </div>
 
       <div class="feature-card">
         <h3>Global Impact Agent</h3>
-        <p>Scores food security, climate resilience, water sustainability, and economic impact.</p>
+        <p>
+          Scores food security, climate resilience, water sustainability, and
+          economic impact.
+        </p>
+      </div>
+
+      <div class="feature-card">
+        <h3>Coordinator Agent</h3>
+        <p>
+          Combines specialist outputs into a final decision-ready advisory
+          recommendation.
+        </p>
+      </div>
+
+      <div class="feature-card">
+        <h3>Report Generator</h3>
+        <p>
+          Converts the advisory output into a downloadable PDF report for
+          farmers and stakeholders.
+        </p>
       </div>
     </div>
   </section>
@@ -154,15 +231,59 @@
         From farmer input to verified advisory output.
       </h2>
 
+      <p class="mt-4 max-w-3xl text-slate-600">
+        The workflow is designed to make the system more reliable than a basic
+        chatbot by separating reasoning into specialist steps.
+      </p>
+
       <div class="mt-8 grid gap-4 md:grid-cols-4">
-        <div class="architecture-step"><span>01</span><strong>Farmer Input</strong><p>Location, goal, farm size, and challenge.</p></div>
-        <div class="architecture-step"><span>02</span><strong>Validation</strong><p>Checks whether the profile is clear enough.</p></div>
-        <div class="architecture-step"><span>03</span><strong>Season Context</strong><p>Infers regional season and climate planning context.</p></div>
-        <div class="architecture-step"><span>04</span><strong>Safety</strong><p>Flags risky financial, chemical, water, or legal decisions.</p></div>
-        <div class="architecture-step"><span>05</span><strong>Planning</strong><p>Creates practical farming strategy and scale-up path.</p></div>
-        <div class="architecture-step"><span>06</span><strong>Water</strong><p>Recommends irrigation, storage, and conservation actions.</p></div>
-        <div class="architecture-step"><span>07</span><strong>Risk</strong><p>Assesses climate, pest, market, and operational risks.</p></div>
-        <div class="architecture-step"><span>08</span><strong>Impact</strong><p>Scores food security, climate, water, and economic outcomes.</p></div>
+        <div class="architecture-step">
+          <span>01</span>
+          <strong>Farmer Input</strong>
+          <p>Collects location, farming goal, farm size, and main challenge.</p>
+        </div>
+
+        <div class="architecture-step">
+          <span>02</span>
+          <strong>Validation</strong>
+          <p>Checks whether the farm profile is specific enough for analysis.</p>
+        </div>
+
+        <div class="architecture-step">
+          <span>03</span>
+          <strong>Season Context</strong>
+          <p>Infers hemisphere, season, and climate planning context.</p>
+        </div>
+
+        <div class="architecture-step">
+          <span>04</span>
+          <strong>Safety</strong>
+          <p>Detects risky chemical, water, legal, financial, or disease terms.</p>
+        </div>
+
+        <div class="architecture-step">
+          <span>05</span>
+          <strong>Planning</strong>
+          <p>Creates practical farm strategy and scale-up roadmap.</p>
+        </div>
+
+        <div class="architecture-step">
+          <span>06</span>
+          <strong>Water</strong>
+          <p>Recommends irrigation, water storage, and conservation actions.</p>
+        </div>
+
+        <div class="architecture-step">
+          <span>07</span>
+          <strong>Risk</strong>
+          <p>Assesses climate, pest, market, operational, and financial risks.</p>
+        </div>
+
+        <div class="architecture-step">
+          <span>08</span>
+          <strong>Impact</strong>
+          <p>Scores food security, climate, water, and economic outcomes.</p>
+        </div>
       </div>
     </div>
   </section>
@@ -173,18 +294,46 @@
       <h2 class="mt-3 text-3xl font-black tracking-tight sm:text-5xl">
         Analyze a farming challenge in real time.
       </h2>
+      <p class="mt-4 text-slate-600">
+        Run a complete advisory workflow and generate a downloadable farmer
+        report.
+      </p>
     </div>
 
     <div class="grid gap-8 lg:grid-cols-[420px_1fr]">
       <aside class="rounded-[2rem] border border-white/70 bg-white/90 p-6 shadow-xl backdrop-blur-xl">
         <h3 class="text-2xl font-black">Farm Profile</h3>
-        <p class="mt-2 text-sm text-slate-500">Enter the region, goal, farm size, and challenge.</p>
+        <p class="mt-2 text-sm text-slate-500">
+          Enter the region, farming goal, farm size, and main challenge.
+        </p>
 
         <div class="mt-6 flex flex-col gap-4">
-          <input id="location" class="input" value="Limpopo, South Africa" placeholder="Location" />
-          <input id="goal" class="input" value="Improve food security and create jobs" placeholder="Farming goal" />
-          <input id="size" class="input" value="50 hectares" placeholder="Farm size" />
-          <textarea id="challenge" class="input min-h-[140px] resize-none" placeholder="Main challenge">Climate change, drought, youth unemployment, poor soil fertility, and limited market access</textarea>
+          <input
+            id="location"
+            class="input"
+            value="Limpopo, South Africa"
+            placeholder="Location"
+          />
+
+          <input
+            id="goal"
+            class="input"
+            value="Improve food security and create jobs"
+            placeholder="Farming goal"
+          />
+
+          <input
+            id="size"
+            class="input"
+            value="50 hectares"
+            placeholder="Farm size"
+          />
+
+          <textarea
+            id="challenge"
+            class="input min-h-[140px] resize-none"
+            placeholder="Main challenge"
+          >Climate change, drought, youth unemployment, poor soil fertility, and limited market access</textarea>
 
           <button onclick="analyzeFarm()" class="primary-button w-full">
             Run Multi-Agent Analysis
@@ -200,10 +349,12 @@
               Structured outputs, confidence levels, safety checks, and impact scores.
             </p>
           </div>
+
           <span id="status" class="status-pill">Ready</span>
         </div>
 
         <div id="scoreGrid" class="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4"></div>
+
         <div id="confidenceGrid" class="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4"></div>
 
         <div id="pdfActions" class="mt-6 hidden">
@@ -224,13 +375,41 @@
         Designed for regional agricultural challenges worldwide.
       </h2>
 
+      <p class="mt-4 max-w-3xl text-slate-600">
+        The system can adapt its reasoning to different regional contexts,
+        farming goals, and climate constraints.
+      </p>
+
       <div class="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        <div class="region-card"><h3>Africa</h3><p>Drought resilience, food security, rural livelihoods.</p></div>
-        <div class="region-card"><h3>Europe</h3><p>Climate adaptation and sustainable agriculture.</p></div>
-        <div class="region-card"><h3>Asia</h3><p>Water efficiency and yield optimization.</p></div>
-        <div class="region-card"><h3>North America</h3><p>Precision agriculture and risk management.</p></div>
-        <div class="region-card"><h3>South America</h3><p>Regenerative farming and forest protection.</p></div>
-        <div class="region-card"><h3>Australia & Oceania</h3><p>Drought management and water sustainability.</p></div>
+        <div class="region-card">
+          <h3>Africa</h3>
+          <p>Drought resilience, food security, rural livelihoods, and smallholder productivity.</p>
+        </div>
+
+        <div class="region-card">
+          <h3>Europe</h3>
+          <p>Climate adaptation, sustainable farming, and water-efficient production.</p>
+        </div>
+
+        <div class="region-card">
+          <h3>Asia</h3>
+          <p>Water efficiency, yield optimization, and climate-resilient crop planning.</p>
+        </div>
+
+        <div class="region-card">
+          <h3>North America</h3>
+          <p>Precision agriculture, operational risk management, and production resilience.</p>
+        </div>
+
+        <div class="region-card">
+          <h3>South America</h3>
+          <p>Regenerative agriculture, forest protection, and market-linked farming.</p>
+        </div>
+
+        <div class="region-card">
+          <h3>Australia & Oceania</h3>
+          <p>Drought management, dryland resilience, and water sustainability.</p>
+        </div>
       </div>
     </div>
   </section>
@@ -241,17 +420,37 @@
       <h2 class="mt-3 text-3xl font-black sm:text-5xl">
         Built for global challenges and measurable opportunity.
       </h2>
+
       <p class="mt-5 max-w-3xl text-slate-300">
         AgriAgent Global connects AI reasoning to food security, water scarcity,
         climate adaptation, youth employment, and sustainable development.
       </p>
 
       <div class="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-        <div class="impact-card">SDG 1<br><span>No Poverty</span></div>
-        <div class="impact-card">SDG 2<br><span>Zero Hunger</span></div>
-        <div class="impact-card">SDG 6<br><span>Clean Water</span></div>
-        <div class="impact-card">SDG 8<br><span>Decent Work</span></div>
-        <div class="impact-card">SDG 13<br><span>Climate Action</span></div>
+        <div class="impact-card">
+          SDG 1<br />
+          <span>No Poverty</span>
+        </div>
+
+        <div class="impact-card">
+          SDG 2<br />
+          <span>Zero Hunger</span>
+        </div>
+
+        <div class="impact-card">
+          SDG 6<br />
+          <span>Clean Water</span>
+        </div>
+
+        <div class="impact-card">
+          SDG 8<br />
+          <span>Decent Work</span>
+        </div>
+
+        <div class="impact-card">
+          SDG 13<br />
+          <span>Climate Action</span>
+        </div>
       </div>
     </div>
   </section>
@@ -265,5 +464,6 @@
 </nav>
 
 <script src="app.js"></script>
+
 </body>
 </html>
