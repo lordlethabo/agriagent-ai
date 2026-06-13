@@ -71,9 +71,10 @@ body {
 
 .hero {
   position: relative;
-  min-height: 100vh;
+  min-height: 720px;
+  margin-top: 92px;
   background:
-    linear-gradient(180deg, rgba(2, 6, 23, 0.45), rgba(2, 6, 23, 0.72)),
+    linear-gradient(180deg, rgba(2, 6, 23, 0.5), rgba(2, 6, 23, 0.78)),
     url("assets/forest-sky.png");
   background-size: cover;
   background-position: center;
@@ -93,7 +94,7 @@ body {
   z-index: 2;
   max-width: 1200px;
   width: 100%;
-  padding: 130px 32px 90px;
+  padding: 80px 32px 90px;
   text-align: center;
 }
 
